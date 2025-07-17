@@ -47,6 +47,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    
+<!-- AOS Animate On Scroll -->
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VOLARQ - Detectores de Fumaça Inteligentes</title>
@@ -120,6 +124,16 @@
 </head>
 <body class="antialiased">
 
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+  AOS.init({
+    duration: 800,
+    once: true,
+    easing: 'ease-in-out',
+    disable: window.innerWidth < 768 // desativa em celulares se quiser
+  });
+</script>
+
 
     <!-- Cabeçalho -->
     <header class="bg-gray-900 shadow-lg py-4 px-6 md:px-12">
@@ -157,59 +171,65 @@
         </div>
     </header>
 
-    <!-- Seção Hero -->
-    <section id="hero" class="relative bg-gray-800 text-white py-20 md:py-32 overflow-hidden">
-        <div class="container mx-auto relative z-10 flex flex-col md:flex-row items-center justify-between px-6 md:px-12">
-            <div class="md:w-1/2 text-center md:text-left mb-10 md:mb-0">
-                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
-                    <span class="text-volarq-orange">Segurança</span> Soluções Inovadoras
-                </h1>
-                <p class="text-lg md:text-xl mb-8 opacity-90">
-                    Detectores de fumaça inteligentes que protegem o que mais importa com tecnologia de ponta e design discreto.
-                </p>
-                <button class="bg-volarq-orange text-white btn-primary hover:bg-volarq-orange-dark shadow-lg rounded-full px-6 py-2" onclick="showMessage('Saiba Mais', 'Explore as funcionalidades avançadas do nosso detector de fumaça e garanta a segurança da sua família.')">
-                    Saiba Mais
-                </button>
-            </div>
-            <div class="md:w-1/2 flex justify-center">
-                <!-- Imagem do detector de fumaça, pode ser substituída por uma foto real -->
-                <img src="https://volarq.com.br/ProdutoPrincipal1.png" alt="Detector de Fumaça Volarq" class="w-full max-w-lg rounded-lg shadow-sm transform hover:scale-105 transition-transform duration-500">
-            </div>
+<!-- Seção Hero -->
+<section id="hero" class="relative bg-gray-800 text-white py-20 md:py-32 overflow-hidden">
+    <div class="container mx-auto relative z-10 flex flex-col md:flex-row items-center justify-between px-6 md:px-12">
+        <div class="md:w-1/2 text-center md:text-left mb-10 md:mb-0" data-aos="fade-up" data-aos-delay="100">
+            <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
+                <span class="text-volarq-orange">Segurança</span> Soluções Inovadoras
+            </h1>
+            <p class="text-lg md:text-xl mb-8 opacity-90">
+                Detectores de fumaça inteligentes que protegem o que mais importa com tecnologia de ponta e design discreto.
+            </p>
+            <button class="bg-volarq-orange text-white btn-primary hover:bg-volarq-orange-dark shadow-lg rounded-full px-6 py-2" onclick="showMessage('Saiba Mais', 'Explore as funcionalidades avançadas do nosso detector de fumaça e garanta a segurança da sua família.')">
+                Saiba Mais
+            </button>
         </div>
-    </section>
+        <div class="md:w-1/2 flex justify-center" data-aos="zoom-in" data-aos-delay="200">
+            <img src="https://volarq.com.br/ProdutoPrincipal1.png" alt="Detector de Fumaça Volarq" class="w-full max-w-lg rounded-lg shadow-sm transform hover:scale-105 transition-transform duration-500">
+        </div>
+    </div>
+</section>
 
-    <!-- Seção de Recursos/Benefícios -->
-    <section id="features" class="bg-gray-900 py-16 md:py-24 px-6 md:px-12">
-        <div class="container mx-auto text-center">
-            <h2 class="text-4xl font-bold mb-12 text-white">Por Que Escolher <span class="text-volarq-orange">VOLARQ</span>?</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                <!-- Recurso 1 -->
-                <div class="bg-gray-800 p-8 rounded-xl shadow-xl transform hover:scale-105 transition-transform duration-300 border border-gray-700">
-                    <div class="text-volarq-orange text-5xl mb-6">
-                        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <h3 class="text-2xl font-semibold mb-4 text-white">Alerta em Tempo Real</h3>
-                    <p class="text-gray-400">Receba notificações instantâneas no seu smartphone em caso de detecção de fumaça, onde quer que você esteja.</p>
+<!-- Seção de Recursos/Benefícios -->
+<section id="features" class="bg-gray-900 py-16 md:py-24 px-6 md:px-12">
+    <div class="container mx-auto text-center">
+        <h2 class="text-4xl font-bold mb-12 text-white" data-aos="fade-up" data-aos-delay="100">Por Que Escolher <span class="text-volarq-orange">VOLARQ</span>?</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <!-- Recurso 1 -->
+            <div class="bg-gray-800 p-8 rounded-xl shadow-xl transform hover:scale-105 transition-transform duration-300 border border-gray-700" data-aos="fade-up" data-aos-delay="200">
+                <div class="text-volarq-orange text-5xl mb-6">
+                    <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
                 </div>
-                <!-- Recurso 2 -->
-                <div class="bg-gray-800 p-8 rounded-xl shadow-xl transform hover:scale-105 transition-transform duration-300 border border-gray-700">
-                    <div class="text-volarq-orange text-5xl mb-6">
-                        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    </div>
-                    <h3 class="text-2xl font-semibold mb-4 text-white">Instalação Simplificada</h3>
-                    <p class="text-gray-400">Design intuitivo e guia passo a passo para uma instalação rápida e sem complicações.</p>
+                <h3 class="text-2xl font-semibold mb-4 text-white">Alerta em Tempo Real</h3>
+                <p class="text-gray-400">Receba notificações instantâneas no seu smartphone em caso de detecção de fumaça, onde quer que você esteja.</p>
+            </div>
+            <!-- Recurso 2 -->
+            <div class="bg-gray-800 p-8 rounded-xl shadow-xl transform hover:scale-105 transition-transform duration-300 border border-gray-700" data-aos="fade-up" data-aos-delay="300">
+                <div class="text-volarq-orange text-5xl mb-6">
+                    <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
                 </div>
-                <!-- Recurso 3 -->
-                <div class="bg-gray-800 p-8 rounded-xl shadow-xl transform hover:scale-105 transition-transform duration-300 border border-gray-700">
-                    <div class="text-volarq-orange text-5xl mb-6">
-                        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.007 12.007 0 002.944 12c0 2.899 1.196 5.518 3.196 7.42A12.007 12.007 0 0012 21.056c2.899 0 5.518-1.196 7.42-3.196A12.007 12.007 0 0021.056 12a11.955 11.955 0 01-3.04-8.618z"></path></svg>
-                    </div>
-                    <h3 class="text-2xl font-semibold mb-4 text-white">Confiabilidade e Durabilidade</h3>
-                    <p class="text-gray-400">Construído com materiais de alta qualidade para garantir anos de proteção ininterrupta.</p>
+                <h3 class="text-2xl font-semibold mb-4 text-white">Instalação Simplificada</h3>
+                <p class="text-gray-400">Design intuitivo e guia passo a passo para uma instalação rápida e sem complicações.</p>
+            </div>
+            <!-- Recurso 3 -->
+            <div class="bg-gray-800 p-8 rounded-xl shadow-xl transform hover:scale-105 transition-transform duration-300 border border-gray-700" data-aos="fade-up" data-aos-delay="400">
+                <div class="text-volarq-orange text-5xl mb-6">
+                    <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.007 12.007 0 002.944 12c0 2.899 1.196 5.518 3.196 7.42A12.007 12.007 0 0012 21.056c2.899 0 5.518-1.196 7.42-3.196A12.007 12.007 0 0021.056 12a11.955 11.955 0 01-3.04-8.618z"/>
+                    </svg>
                 </div>
+                <h3 class="text-2xl font-semibold mb-4 text-white">Confiabilidade e Durabilidade</h3>
+                <p class="text-gray-400">Construído com materiais de alta qualidade para garantir anos de proteção ininterrupta.</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
+
 
     <!-- Seção do Produto (Detalhes) -->
     <section id="product" class="bg-gray-800 py-16 md:py-24 px-6 md:px-12">
