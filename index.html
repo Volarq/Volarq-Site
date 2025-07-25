@@ -145,58 +145,73 @@
             </div>
 
 <!-- Menu de Navegação (Desktop) -->
-    <div class="hidden md:flex space-x-8">
-        <a href="#hero" class="text-white hover:text-volarq-orange transition duration-300 smooth-scroll">Início</a>
-        <a href="#features" class="text-white hover:text-volarq-orange transition duration-300 smooth-scroll">Recursos</a>
-        <a href="#product" class="text-white hover:text-volarq-orange transition duration-300 smooth-scroll">Produto</a>
-        <a href="#about-us" class="text-white hover:text-volarq-orange transition duration-300 smooth-scroll">Quem Somos</a>
-        <a href="#contact" class="text-white hover:text-volarq-orange transition duration-300 smooth-scroll">Contato</a>
-    </div>
+<div class="hidden md:flex space-x-8">
+    <a href="#hero" class="text-white hover:text-volarq-orange transition duration-300">Início</a>
+    <a href="#features" class="text-white hover:text-volarq-orange transition duration-300">Recursos</a>
+    <a href="#product" class="text-white hover:text-volarq-orange transition duration-300">Produto</a>
+    <a href="#about-us" class="text-white hover:text-volarq-orange transition duration-300">Quem Somos</a>
+    <a href="#contact" class="text-white hover:text-volarq-orange transition duration-300">Contato</a>
+</div>
 <!-- Botão de Menu para Mobile -->
-    <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-    </button>
+<button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+    </svg>
+</button>
 </nav>
 <!-- Menu Mobile (oculto por padrão) -->
-    <div id="mobile-menu" class="md:hidden hidden mt-4">
-        <a href="#hero" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300 smooth-scroll">Início</a>
-        <a href="#features" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300 smooth-scroll">Recursos</a>
-        <a href="#product" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300 smooth-scroll">Produto</a>
-        <a href="#about-us" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300 smooth-scroll">Quem Somos</a>
-        <a href="#contact" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300 smooth-scroll">Contato</a>
-    </div>
+<div id="mobile-menu" class="md:hidden hidden mt-4">
+    <a href="#hero" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300">Início</a>
+    <a href="#features" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300">Recursos</a>
+    <a href="#product" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300">Produto</a>
+    <a href="#about-us" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300">Quem Somos</a>
+    <a href="#contact" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300">Contato</a>
+</div>
 </header>
 
 <script>
-// Funcionalidade do menu mobile
-document.getElementById('mobile-menu-button').addEventListener('click', function() {
+document.addEventListener('DOMContentLoaded', function() {
+    // Funcionalidade do menu mobile
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
     const mobileMenu = document.getElementById('mobile-menu');
-    mobileMenu.classList.toggle('hidden');
-});
+    
+    if (mobileMenuButton && mobileMenu) {
+        mobileMenuButton.addEventListener('click', function() {
+            mobileMenu.classList.toggle('hidden');
+        });
+    }
 
-// Scroll suave para todos os links do menu
-document.querySelectorAll('.smooth-scroll').forEach(function(link) {
-    link.addEventListener('click', function(e) {
-        e.preventDefault();
-        
-        const targetId = this.getAttribute('href');
+    // Função de scroll suave
+    function smoothScrollTo(targetId) {
         const targetElement = document.querySelector(targetId);
-        
         if (targetElement) {
+            const headerOffset = 80; // Ajuste conforme a altura do seu header
+            const elementPosition = targetElement.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    // Adicionar event listeners para todos os links do menu
+    const menuLinks = document.querySelectorAll('a[href^="#"]');
+    menuLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            
             // Fecha o menu mobile se estiver aberto
-            const mobileMenu = document.getElementById('mobile-menu');
-            if (!mobileMenu.classList.contains('hidden')) {
+            if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
                 mobileMenu.classList.add('hidden');
             }
             
-            // Scroll suave até o elemento
-            targetElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
+            // Executa o scroll suave
+            smoothScrollTo(targetId);
+        });
     });
 });
 </script>
