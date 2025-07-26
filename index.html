@@ -351,28 +351,28 @@
 </section>
 
     <!-- Seção de Contato -->
-    <section id="contact" class="bg-gray-800 py-16 md:py-24 px-6 md:px-12">
-        <div class="container mx-auto text-center">
-            <h2 class="text-4xl font-bold mb-12 text-white">Fale Conosco</h2>
-            <p class="text-lg text-gray-300 mb-10 max-w-2xl mx-auto">
-                Tem alguma dúvida, sugestão ou quer saber mais sobre nossos produtos? Entre em contato conosco!
-            </p>
-            <div class="max-w-xl mx-auto bg-gray-900 p-8 rounded-xl shadow-xl border border-gray-700">
-                <form onsubmit="event.preventDefault(); showMessage('Mensagem Enviada!', 'Agradecemos o seu contato. Retornaremos em breve!'); this.reset();">
-                    <div class="mb-6">
-                        <input type="text" id="name" name="name" placeholder="Seu Nome" class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-volarq-orange" required>
-                    </div>
-                    <div class="mb-6">
-                        <input type="email" id="email" name="email" placeholder="Seu E-mail" class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-volarq-orange" required>
-                    </div>
-                    <div class="mb-6">
-                        <textarea id="message" name="message" rows="5" placeholder="Sua Mensagem" class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-volarq-orange" required></textarea>
-                    </div>
-                    <button type="submit" class="bg-volarq-orange text-white btn-primary hover:bg-volarq-orange-dark w-full shadow-lg rounded-full px-3 py-1">
-                        Enviar Mensagem
-                    </button>
-                </form>
-            </div>
+<form action="https://formsubmit.co/volarq.oficial@gmail.com" method="POST">
+    <div class="mb-6">
+        <input type="text" name="name" placeholder="Seu Nome" required class="...">
+    </div>
+    <div class="mb-6">
+        <input type="email" name="email" placeholder="Seu E-mail" required class="...">
+    </div>
+    <div class="mb-6">
+        <textarea name="message" rows="5" placeholder="Sua Mensagem" required class="..."></textarea>
+    </div>
+    
+    <!-- Proteção contra spam (opcional) -->
+    <input type="hidden" name="_captcha" value="false">
+    
+    <!-- Redirecionamento após envio (opcional) -->
+    <input type="hidden" name="_next" value="https://volarq.com.br/obrigado.html">
+    
+    <button type="submit" class="...">
+        Enviar Mensagem
+    </button>
+</form>
+
             <div class="mt-10 text-gray-400">
                 <p>Ou ligue para: <span class="text-volarq-orange font-semibold">(11) 94152-1511</span></p>
                 <p>E-mail: <span class="text-volarq-orange font-semibold">volarq.oficial@gmail.com</span></p>
