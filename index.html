@@ -52,7 +52,16 @@
     <!-- AOS Animate On Scroll -->
 <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
-    
+    <script>
+    const menuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    menuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+</script>
+
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VOLARQ - Detectores de Fumaça Inteligentes</title>
