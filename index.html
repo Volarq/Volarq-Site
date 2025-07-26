@@ -289,7 +289,12 @@
                     <li>Design compacto e discreto que se integra a qualquer ambiente.</li>
                     <li>Fácil integração com sistemas de casa inteligente.</li>
                 </ul>
-                <button class="bg-volarq-orange text-white btn-primary hover:bg-volarq-orange-dark shadow-lg rounded-full px-6 py-2" data-aos="fade-up" data-aos-delay="100" onclick="document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });">
+                <button 
+                    class="bg-volarq-orange text-white btn-primary hover:bg-volarq-orange-dark shadow-lg rounded-full px-6 py-2" 
+                    data-aos="fade-up" 
+                    data-aos-delay="100" 
+                    onclick="event.preventDefault(); document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });"
+                >
                     Adquira o Seu
                 </button>
             </div>
