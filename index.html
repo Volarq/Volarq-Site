@@ -171,6 +171,13 @@
     <a href="#product" class="text-white hover:text-volarq-orange transition duration-300 scroll-link">Produto</a>
     <a href="#about-us" class="text-white hover:text-volarq-orange transition duration-300 scroll-link">Quem Somos</a>
     <a href="#contact" class="text-white hover:text-volarq-orange transition duration-300 scroll-link">Contato</a>
+    <button 
+        type="button" 
+        class="bg-volarq-orange text-white px-4 py-2 rounded-full font-semibold hover:bg-volarq-orange-dark transition duration-300"
+        onclick="openQuizModal()"
+    >
+        Quiz
+    </button>
 </div>
 <!-- Botão de Menu para Mobile -->
 <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
@@ -186,7 +193,86 @@
     <a href="#product" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300 scroll-link">Produto</a>
     <a href="#about-us" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300 scroll-link">Quem Somos</a>
     <a href="#contact" class="block py-2 px-4 text-white hover:bg-gray-800 transition duration-300 scroll-link">Contato</a>
+    <button 
+        type="button" 
+        class="w-full bg-volarq-orange text-white px-4 py-2 rounded-full font-semibold mt-2 hover:bg-volarq-orange-dark transition duration-300"
+        onclick="openQuizModal()"
+    >
+        Quiz
+    </button>
 </div>
+
+<!-- Modal Quiz -->
+<div id="quizModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 420px;">
+        <span class="close-button" onclick="closeQuizModal()">&times;</span>
+        <h3 class="text-2xl font-bold mb-4">Quiz sobre Tabagismo nas Escolas</h3>
+        <form id="quizForm" class="text-left space-y-6">
+            <div>
+                <p class="font-semibold mb-2">1. O que é tabagismo?</p>
+                <label><input type="radio" name="q1" value="a"> Uso de tabaco</label><br>
+                <label><input type="radio" name="q1" value="b"> Prática de esportes</label><br>
+                <label><input type="radio" name="q1" value="c"> Alimentação saudável</label><br>
+                <label><input type="radio" name="q1" value="d"> Uso de tecnologia</label>
+            </div>
+            <div>
+                <p class="font-semibold mb-2">2. O tabagismo pode causar problemas de saúde?</p>
+                <label><input type="radio" name="q2" value="a"> Sim</label><br>
+                <label><input type="radio" name="q2" value="b"> Não</label>
+            </div>
+            <div>
+                <p class="font-semibold mb-2">3. É permitido fumar dentro das escolas?</p>
+                <label><input type="radio" name="q3" value="a"> Não</label><br>
+                <label><input type="radio" name="q3" value="b"> Sim</label>
+            </div>
+            <div>
+                <p class="font-semibold mb-2">4. Qual é uma forma de prevenir o tabagismo entre jovens?</p>
+                <label><input type="radio" name="q4" value="a"> Informação e conscientização</label><br>
+                <label><input type="radio" name="q4" value="b"> Incentivar o uso</label><br>
+                <label><input type="radio" name="q4" value="c"> Ignorar o problema</label>
+            </div>
+            <button 
+                type="button" 
+                class="bg-volarq-orange text-white btn-primary hover:bg-volarq-orange-dark shadow-lg rounded-full px-6 py-2 mt-4 w-full"
+                onclick="submitQuiz()"
+            >
+                Ver Resultado
+            </button>
+        </form>
+        <div id="quizResult" class="mt-4 text-center font-semibold text-volarq-orange" style="display: none;"></div>
+    </div>
+</div>
+<script>
+function openQuizModal() {
+    document.getElementById('quizModal').style.display = 'flex';
+    document.getElementById('quizForm').style.display = 'block';
+    document.getElementById('quizResult').style.display = 'none';
+}
+function closeQuizModal() {
+    document.getElementById('quizModal').style.display = 'none';
+}
+function submitQuiz() {
+    const answers = {
+        q1: 'a',
+        q2: 'a',
+        q3: 'a',
+        q4: 'a'
+    };
+    let score = 0;
+    for (let q in answers) {
+        const selected = document.querySelector('input[name="'+q+'"]:checked');
+        if (selected && selected.value === answers[q]) score++;
+    }
+    document.getElementById('quizForm').style.display = 'none';
+    document.getElementById('quizResult').style.display = 'block';
+    document.getElementById('quizResult').textContent = `Você acertou ${score} de 4 perguntas!`;
+}
+// Fecha o modal se o usuário clicar fora do conteúdo do modal
+window.addEventListener('click', function(event) {
+    const quizModal = document.getElementById('quizModal');
+    if (event.target === quizModal) closeQuizModal();
+});
+</script>
 </header>
 <script>
   // Scroll suave para todos os links do menu
@@ -315,11 +401,28 @@
 <!-- Imagem da Equipe -->
 <div class="mt-4 px-4 md:px-0" data-aos="fade-up" data-aos-delay="100">
     <div class="flex justify-center">
-        <img 
+        <button 
+            type="button"
+            onclick="showMessage('Informações da Turma', 'E.E Dr. Benedito Lázaro de Campos, turma 3º Ano Técnico.')"
+            class="focus:outline-none"
+            style="background: none; border: none; padding: 0;"
+        >
+            <img 
             src="https://volarq.com.br/TurmaInteiraC.png" 
             alt="Equipe Volarq - 4 pessoas"
-            class="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-xl h-auto object-contain opacity-90 hover:opacity-100 transition-opacity duration-300"
-        >
+            class="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-xl h-auto object-contain opacity-90 hover:scale-105 transition-transform duration-300"
+            style="transition-property: transform, opacity;"
+            >
+        </button>
+
+        <!-- Modal para mensagem (inicialmente escondido) -->
+        <div id="messageModal" class="modal" style="display: none;">
+            <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle" class="text-2xl font-bold mb-4"></h3>
+            <p id="modalMessage" class="text-lg"></p>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -369,8 +472,8 @@
     </form>
 
     <div class="mt-8 text-sm text-gray-300" data-aos="fade-up" data-aos-delay="50">
-      <p>Ou ligue para: <span class="text-orange-400 font-semibold" data-aos="fade-up" data-aos-delay="50">(11) 94152-1511</span></p>
-      <p>E-mail: <span class="text-orange-400 font-semibold" data-aos="fade-up" data-aos-delay="50">volarq.oficial@gmail.com</span></p>
+      <p>Ou ligue para: <span class="text-orange-400 font-semibold">(11) 94152-1511</span></p>
+      <p>E-mail: <span class="text-orange-400 font-semibold">volarq.oficial@gmail.com</span></p>
     </div>
   </div>
 </section>
