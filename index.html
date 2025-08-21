@@ -205,7 +205,7 @@
 <!-- Modal Quiz -->
 <div id="quizModal" class="modal" style="display: none;">
     <div class="modal-content" style="max-width: 420px;">
-        <span class="close-button" onclick="closeQuizModal()">&times;</span>
+        <span class="close-button" onclick="handleCloseQuiz()">&times;</span>
         <h3 class="text-2xl font-bold mb-4">Quiz sobre Tabagismo nas Escolas</h3>
         <form id="quizForm" class="text-left space-y-6">
             <div>
@@ -216,7 +216,7 @@
                 <label><input type="radio" name="q1" value="d"> Álcool</label>
             </div>
             <div>
-                <p class="font-semibold mb-2">2. Qual é um dos riscos imediatos para a saúde de um fumante passivo (quem inala a fumaça do cigarro)?</p>
+                <p class="font-semibold mb-2">2. Qual é um dos riscos imediatos para a saúde de um fumante passivo?</p>
                 <label><input type="radio" name="q2" value="a"> Dor no pé</label><br>
                 <label><input type="radio" name="q2" value="b"> Irritação nos olhos e na garganta</label><br>
                 <label><input type="radio" name="q2" value="c"> Perda de cabelo</label><br>
@@ -247,22 +247,44 @@
         <div id="quizResult" class="mt-4 text-center font-semibold text-volarq-orange" style="display: none;"></div>
     </div>
 </div>
+
+<!-- Modal Pesquisa -->
+<div id="surveyModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 420px; text-align: center;">
+        <span class="close-button" onclick="closeSurveyModal()">&times;</span>
+        <h3 class="text-2xl font-bold mb-4">Pesquisa de Satisfação</h3>
+        <p class="mb-4">Como você se sentiu com este quiz?</p>
+        <div class="flex justify-center space-x-4 text-3xl">
+            <span class="cursor-pointer" onclick="submitSurvey('😡')">😡</span>
+            <span class="cursor-pointer" onclick="submitSurvey('😕')">😕</span>
+            <span class="cursor-pointer" onclick="submitSurvey('😐')">😐</span>
+            <span class="cursor-pointer" onclick="submitSurvey('😊')">😊</span>
+            <span class="cursor-pointer" onclick="submitSurvey('🤩')">🤩</span>
+        </div>
+        <div id="surveyResult" class="mt-4 font-semibold text-volarq-orange" style="display: none;"></div>
+    </div>
+</div>
+
 <script>
 function openQuizModal() {
     document.getElementById('quizModal').style.display = 'flex';
     document.getElementById('quizForm').style.display = 'block';
     document.getElementById('quizResult').style.display = 'none';
 }
+function handleCloseQuiz() {
+    // Se a pessoa já terminou o quiz, abre pesquisa
+    if (document.getElementById('quizResult').style.display === 'block') {
+        document.getElementById('quizModal').style.display = 'none';
+        document.getElementById('surveyModal').style.display = 'flex';
+    } else {
+        closeQuizModal();
+    }
+}
 function closeQuizModal() {
     document.getElementById('quizModal').style.display = 'none';
 }
 function submitQuiz() {
-    const answers = {
-        q1: 'b',
-        q2: 'b',
-        q3: 'c',
-        q4: 'a'
-    };
+    const answers = { q1: 'b', q2: 'b', q3: 'c', q4: 'a' };
     let score = 0;
     for (let q in answers) {
         const selected = document.querySelector('input[name="'+q+'"]:checked');
@@ -272,13 +294,23 @@ function submitQuiz() {
     document.getElementById('quizResult').style.display = 'block';
     document.getElementById('quizResult').textContent = `Você acertou ${score} de 4 perguntas!`;
 }
-// Fecha o modal se o usuário clicar fora do conteúdo do modal
+function submitSurvey(emoji) {
+    document.getElementById('surveyResult').style.display = 'block';
+    document.getElementById('surveyResult').textContent = `Obrigado pelo feedback: ${emoji}`;
+}
+function closeSurveyModal() {
+    document.getElementById('surveyModal').style.display = 'none';
+}
+// Fecha os modais clicando fora
 window.addEventListener('click', function(event) {
     const quizModal = document.getElementById('quizModal');
+    const surveyModal = document.getElementById('surveyModal');
     if (event.target === quizModal) closeQuizModal();
+    if (event.target === surveyModal) closeSurveyModal();
 });
 </script>
 </header>
+
 <script>
   // Scroll suave para todos os links do menu
   document.addEventListener("DOMContentLoaded", function () {
