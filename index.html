@@ -202,113 +202,240 @@
     </button>
 </div>
 
+<style>
+/* ====== Estilo Geral do Modal ====== */
+.modal {
+    position: fixed; inset: 0;
+    display: none;
+    align-items: center; justify-content: center;
+    background-color: rgba(0,0,0,0.6);
+    z-index: 9999;
+}
+.modal-content {
+    background: #030712;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    width: 90%; max-width: 520px;
+    animation: fadeIn 0.25s ease;
+    position: relative;
+}
+.close-button {
+    position: absolute; right: 14px; top: 10px;
+    font-size: 28px; line-height: 1;
+    font-weight: bold; cursor: pointer;
+    color: #999; transition: 0.2s;
+}
+.close-button:hover { color: #333; }
+
+/* ====== Quiz ====== */
+.quiz-title { text-align: center; margin: 4px 0 16px; }
+.quiz-question { margin-bottom: 22px; }
+.quiz-question p { margin: 0 0 10px; font-weight: 600; }
+
+.quiz-options input { display: none; }
+/* card clicável */
+.quiz-options label {
+    display: block;
+    background: #111827;
+    margin-bottom: 10px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+}
+.quiz-options label:hover { background: #555e6b; border-color: #ff8a42; }
+.quiz-options input:checked + label {
+    background: #ff8a42; color: #fff; border-color: #ff6600;
+}
+
+/* Botão principal */
+.quiz-submit {
+    background: linear-gradient(90deg, #ff8a42, #ff6600);
+    color: #fff; border: none; border-radius: 50px;
+    font-size: 18px; padding: 14px; width: 100%;
+    cursor: pointer; font-weight: 700;
+    box-shadow: 0 4px 12px rgba(255,102,0,0.35);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.quiz-submit:hover { transform: scale(1.03); box-shadow: 0 6px 16px rgba(255,102,0,0.45); }
+
+#quizResult { font-size: 20px; color: #ff6600; text-align: center; display: none; }
+
+/* ====== Pesquisa Emoji ====== */
+.survey-title { text-align: center; margin: 6px 0 12px; }
+.emoji-row {
+    display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;
+}
+.emoji-btn {
+    font-size: 30px; line-height: 1; padding: 10px 12px;
+    background: #f7f7f7; border-radius: 14px; border: 2px solid transparent;
+    cursor: pointer; transition: transform .1s ease, background .2s ease, border-color .2s ease;
+}
+.emoji-btn:hover { background: #fff4ea; border-color: #ff8a42; transform: translateY(-2px); }
+#surveyResult { margin-top: 14px; text-align: center; font-weight: 600; color: #ff6600; display: none; }
+
+/* ====== Animação ====== */
+@keyframes fadeIn { from {opacity: 0; transform: translateY(-8px);} to {opacity: 1; transform: translateY(0);} }
+</style>
+
 <!-- Modal Quiz -->
-<div id="quizModal" class="modal" style="display: none;">
-    <div class="modal-content" style="max-width: 420px;">
-        <span class="close-button" onclick="handleCloseQuiz()">&times;</span>
-        <h3 class="text-2xl font-bold mb-4">Quiz sobre Tabagismo nas Escolas</h3>
-        <form id="quizForm" class="text-left space-y-6">
-            <div>
-                <p class="font-semibold mb-2">1. Qual é a principal substância viciante presente no cigarro?</p>
-                <label><input type="radio" name="q1" value="a"> Açúcar</label><br>
-                <label><input type="radio" name="q1" value="b"> Nicotina</label><br>
-                <label><input type="radio" name="q1" value="c"> Cafeína</label><br>
-                <label><input type="radio" name="q1" value="d"> Álcool</label>
-            </div>
-            <div>
-                <p class="font-semibold mb-2">2. Qual é um dos riscos imediatos para a saúde de um fumante passivo?</p>
-                <label><input type="radio" name="q2" value="a"> Dor no pé</label><br>
-                <label><input type="radio" name="q2" value="b"> Irritação nos olhos e na garganta</label><br>
-                <label><input type="radio" name="q2" value="c"> Perda de cabelo</label><br>
-                <label><input type="radio" name="q2" value="d"> Aumento da visão</label>
-            </div>
-            <div>
-                <p class="font-semibold mb-2">3. De acordo com a lei brasileira, fumar dentro de escolas é:</p>
-                <label><input type="radio" name="q3" value="a"> Permitido apenas para professores</label><br>
-                <label><input type="radio" name="q3" value="b"> Permitido somente em áreas abertas</label><br>
-                <label><input type="radio" name="q3" value="c"> Proibido</label><br>
-                <label><input type="radio" name="q3" value="d"> Permitido durante o intervalo</label>
-            </div>
-            <div>
-                <p class="font-semibold mb-2">4. Qual destas doenças está mais associada ao tabagismo?</p>
-                <label><input type="radio" name="q4" value="a"> Câncer de pulmão</label><br>
-                <label><input type="radio" name="q4" value="b"> Apendicite</label><br>
-                <label><input type="radio" name="q4" value="c"> Caxumba</label><br>
-                <label><input type="radio" name="q4" value="d"> Gripe comum</label>
-            </div>
-            <button 
-                type="button" 
-                class="bg-volarq-orange text-white btn-primary hover:bg-volarq-orange-dark shadow-lg rounded-full px-6 py-2 mt-4 w-full"
-                onclick="submitQuiz()"
-            >
-                Ver Resultado
-            </button>
-        </form>
-        <div id="quizResult" class="mt-4 text-center font-semibold text-volarq-orange" style="display: none;"></div>
-    </div>
+<div id="quizModal" class="modal">
+  <div class="modal-content">
+    <span class="close-button" onclick="handleCloseQuiz()">&times;</span>
+    <h3 class="quiz-title">Quiz sobre Tabagismo nas Escolas</h3>
+
+    <form id="quizForm" novalidate>
+      <div class="quiz-question">
+        <p>1. Qual é a principal substância viciante presente no cigarro?</p>
+        <div class="quiz-options">
+          <input type="radio" id="q1a" name="q1" value="a"><label for="q1a">Açúcar</label>
+          <input type="radio" id="q1b" name="q1" value="b"><label for="q1b">Nicotina</label>
+          <input type="radio" id="q1c" name="q1" value="c"><label for="q1c">Cafeína</label>
+          <input type="radio" id="q1d" name="q1" value="d"><label for="q1d">Álcool</label>
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <p>2. Qual é um dos riscos imediatos para a saúde de um fumante passivo?</p>
+        <div class="quiz-options">
+          <input type="radio" id="q2a" name="q2" value="a"><label for="q2a">Dor no pé</label>
+          <input type="radio" id="q2b" name="q2" value="b"><label for="q2b">Irritação nos olhos e na garganta</label>
+          <input type="radio" id="q2c" name="q2" value="c"><label for="q2c">Perda de cabelo</label>
+          <input type="radio" id="q2d" name="q2" value="d"><label for="q2d">Aumento da visão</label>
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <p>3. De acordo com a lei brasileira, fumar dentro de escolas é:</p>
+        <div class="quiz-options">
+          <input type="radio" id="q3a" name="q3" value="a"><label for="q3a">Permitido apenas para professores</label>
+          <input type="radio" id="q3b" name="q3" value="b"><label for="q3b">Permitido somente em áreas abertas</label>
+          <input type="radio" id="q3c" name="q3" value="c"><label for="q3c">Proibido</label>
+          <input type="radio" id="q3d" name="q3" value="d"><label for="q3d">Permitido durante o intervalo</label>
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <p>4. Qual destas doenças está mais associada ao tabagismo?</p>
+        <div class="quiz-options">
+          <input type="radio" id="q4a" name="q4" value="a"><label for="q4a">Câncer de pulmão</label>
+          <input type="radio" id="q4b" name="q4" value="b"><label for="q4b">Apendicite</label>
+          <input type="radio" id="q4c" name="q4" value="c"><label for="q4c">Caxumba</label>
+          <input type="radio" id="q4d" name="q4" value="d"><label for="q4d">Gripe comum</label>
+        </div>
+      </div>
+
+      <button type="button" class="quiz-submit" onclick="submitQuiz()">Ver Resultado</button>
+    </form>
+
+    <div id="quizResult" aria-live="polite"></div>
+  </div>
 </div>
 
 <!-- Modal Pesquisa -->
-<div id="surveyModal" class="modal" style="display: none;">
-    <div class="modal-content" style="max-width: 420px; text-align: center;">
-        <span class="close-button" onclick="closeSurveyModal()">&times;</span>
-        <h3 class="text-2xl font-bold mb-4">Pesquisa de Satisfação</h3>
-        <p class="mb-4">Como você se sentiu com este quiz?</p>
-        <div class="flex justify-center space-x-4 text-3xl">
-            <span class="cursor-pointer" onclick="submitSurvey('😡')">😡</span>
-            <span class="cursor-pointer" onclick="submitSurvey('😕')">😕</span>
-            <span class="cursor-pointer" onclick="submitSurvey('😐')">😐</span>
-            <span class="cursor-pointer" onclick="submitSurvey('😊')">😊</span>
-            <span class="cursor-pointer" onclick="submitSurvey('😁')">😁</span>
-        </div>
-        <div id="surveyResult" class="mt-4 font-semibold text-volarq-orange" style="display: none;"></div>
+<div id="surveyModal" class="modal">
+  <div class="modal-content">
+    <span class="close-button" onclick="closeSurveyModal()">&times;</span>
+    <h3 class="survey-title">Pesquisa de Satisfação</h3>
+    <p style="text-align:center; margin: 0 0 12px;">Como você se sentiu com este quiz?</p>
+
+    <div class="emoji-row">
+      <button class="emoji-btn" onclick="submitSurvey('😡')" aria-label="Muito insatisfeito">😡</button>
+      <button class="emoji-btn" onclick="submitSurvey('😕')" aria-label="Insatisfeito">😕</button>
+      <button class="emoji-btn" onclick="submitSurvey('😐')" aria-label="Neutro">😐</button>
+      <button class="emoji-btn" onclick="submitSurvey('🙂')" aria-label="Satisfeito">🙂</button>
+      <button class="emoji-btn" onclick="submitSurvey('😀')" aria-label="Muito satisfeito">😀</button>
     </div>
+
+    <div id="surveyResult"></div>
+  </div>
 </div>
 
 <script>
+/* ====== Abrir/fechar ====== */
 function openQuizModal() {
-    document.getElementById('quizModal').style.display = 'flex';
-    document.getElementById('quizForm').style.display = 'block';
-    document.getElementById('quizResult').style.display = 'none';
+  document.getElementById('quizModal').style.display = 'flex';
+  document.getElementById('quizForm').style.display = 'block';
+  document.getElementById('quizResult').style.display = 'none';
 }
-function handleCloseQuiz() {
-    // Se a pessoa já terminou o quiz, abre pesquisa
-    if (document.getElementById('quizResult').style.display === 'block') {
-        document.getElementById('quizModal').style.display = 'none';
-        document.getElementById('surveyModal').style.display = 'flex';
-    } else {
-        closeQuizModal();
-    }
-}
+
 function closeQuizModal() {
+  document.getElementById('quizModal').style.display = 'none';
+}
+
+function handleCloseQuiz() {
+  // Se já viu resultado, abre pesquisa; senão apenas fecha
+  const resultEl = document.getElementById('quizResult');
+  if (resultEl.style.display === 'block') {
     document.getElementById('quizModal').style.display = 'none';
+    document.getElementById('surveyModal').style.display = 'flex';
+  } else {
+    closeQuizModal();
+  }
 }
-function submitQuiz() {
-    const answers = { q1: 'b', q2: 'b', q3: 'c', q4: 'a' };
-    let score = 0;
-    for (let q in answers) {
-        const selected = document.querySelector('input[name="'+q+'"]:checked');
-        if (selected && selected.value === answers[q]) score++;
-    }
-    document.getElementById('quizForm').style.display = 'none';
-    document.getElementById('quizResult').style.display = 'block';
-    document.getElementById('quizResult').textContent = `Você acertou ${score} de 4 perguntas!`;
-}
-function submitSurvey(emoji) {
-    document.getElementById('surveyResult').style.display = 'block';
-    document.getElementById('surveyResult').textContent = `Obrigado pelo feedback: ${emoji}`;
-}
+
 function closeSurveyModal() {
-    document.getElementById('surveyModal').style.display = 'none';
+  document.getElementById('surveyModal').style.display = 'none';
 }
-// Fecha os modais clicando fora
+
+/* ====== Lógica do Quiz ====== */
+function submitQuiz() {
+  const answers = { q1: 'b', q2: 'b', q3: 'c', q4: 'a' };
+  const form = document.getElementById('quizForm');
+
+  // Verifica se todas as questões foram respondidas
+  const required = Object.keys(answers);
+  const allAnswered = required.every(q => !!document.querySelector(`input[name="${q}"]:checked`));
+  if (!allAnswered) {
+    // destaque simples: borda nas perguntas sem resposta
+    required.forEach(q => {
+      const block = document.querySelector(`input[name="${q}"]`)?.closest('.quiz-question');
+      const checked = document.querySelector(`input[name="${q}"]:checked`);
+      block.style.outline = checked ? 'none' : '2px solid #ff8a42';
+      block.style.borderRadius = '12px';
+      block.style.padding = checked ? '' : '6px';
+    });
+    alert('Responda todas as perguntas para ver o resultado 🙂');
+    return;
+  }
+
+  // Calcula pontuação
+  let score = 0;
+  for (let q in answers) {
+    const selected = document.querySelector(`input[name="${q}"]:checked`);
+    if (selected && selected.value === answers[q]) score++;
+  }
+
+  form.style.display = 'none';
+  const resultEl = document.getElementById('quizResult');
+  resultEl.textContent = `Você acertou ${score} de 4 perguntas!`;
+  resultEl.style.display = 'block';
+}
+
+/* ====== Pesquisa Emoji ====== */
+function submitSurvey(emoji) {
+  // opcional: salve no localStorage
+  try { localStorage.setItem('quiz_satisfaction', emoji); } catch(e) {}
+  const el = document.getElementById('surveyResult');
+  el.textContent = `Obrigado pelo feedback: ${emoji}`;
+  el.style.display = 'block';
+
+  // fecha automaticamente depois de 1,5s
+  setTimeout(() => { closeSurveyModal(); }, 1500);
+}
+
+/* ====== Fecha clicando fora ====== */
 window.addEventListener('click', function(event) {
-    const quizModal = document.getElementById('quizModal');
-    const surveyModal = document.getElementById('surveyModal');
-    if (event.target === quizModal) closeQuizModal();
-    if (event.target === surveyModal) closeSurveyModal();
+  const quizModal = document.getElementById('quizModal');
+  const surveyModal = document.getElementById('surveyModal');
+  if (event.target === quizModal) closeQuizModal();
+  if (event.target === surveyModal) closeSurveyModal();
 });
 </script>
+
 </header>
 
 <script>
