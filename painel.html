@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>VOLARQ Painel</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<style>
+
+body{
+background:#0d1117;
+color:white;
+font-family:Arial;
+text-align:center;
+}
+
+.card{
+background:#161b22;
+margin:20px;
+padding:20px;
+border-radius:15px;
+}
+
+button{
+padding:15px;
+background:#ff4444;
+border:none;
+border-radius:10px;
+color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>VOLARQ</h1>
+
+<div class="card">
+
+<h2>Status</h2>
+
+<div id="status">Offline</div>
+
+</div>
+
+<div class="card">
+
+<h2>Sensor Óptico</h2>
+
+<div id="optico">0</div>
+
+</div>
+
+<div class="card">
+
+<h2>Sensor MQ2</h2>
+
+<div id="mq2">0</div>
+
+</div>
+
+<div class="card">
+
+<h2>Sensibilidade</h2>
+
+<input type="range" min="0" max="100" id="slider">
+
+</div>
+
+<div class="card">
+
+<button onclick="silenciar()">Silenciar</button>
+
+</div>
+
+<script>
+
+const firebaseConfig = {
+
+apiKey: "COLE_AQUI",
+
+databaseURL: "COLE_AQUI",
+
+};
+
+firebase.initializeApp(firebaseConfig);
+
+var db = firebase.database();
+
+db.ref("devices/volarq1").on("value", function(snapshot){
+
+var data = snapshot.val();
+
+document.getElementById("optico").innerHTML = data.optico;
+
+document.getElementById("mq2").innerHTML = data.mq2;
+
+if(data.status == "online"){
+document.getElementById("status").innerHTML="🟢 Online";
+}else{
+document.getElementById("status").innerHTML="🔴 Offline";
+}
+
+});
+
+function silenciar(){
+
+db.ref("devices/volarq1").update({
+
+silenciar:true
+
+});
+
+}
+
+document.getElementById("slider").oninput=function(){
+
+db.ref("devices/volarq1").update({
+
+sensibilidade:this.value
+
+});
+
+}
+
+</script>
+
+</body>
+
+</html>
