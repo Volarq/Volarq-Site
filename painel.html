@@ -1,137 +1,229 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="pt-br">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VOLARQ Painel</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root {
+            --bg-color: #12161d;
+            --card-bg: linear-gradient(145deg, #1a1f26, #14181f);
+            --accent-green: #d4ff00;
+            --accent-red: #ff4444;
+            --text-gray: #8b949e;
+            --shadow: 5px 5px 15px #0a0d11, -2px -2px 10px #1e252e;
+        }
 
-<title>VOLARQ Painel</title>
+        body {
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 4px;
+            margin-bottom: 5px;
+            font-size: 1.5rem;
+            color: #ffffff;
+        }
 
-<style>
+        .status-text {
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            margin-bottom: 20px;
+        }
 
-body{
-background:#0d1117;
-color:white;
-font-family:Arial;
-text-align:center;
-}
+        /* Container dos Gauges */
+        .dashboard-grid {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
 
-.card{
-background:#161b22;
-margin:20px;
-padding:20px;
-border-radius:15px;
-}
+        .gauge-card {
+            background: var(--card-bg);
+            flex: 1;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid #21262d;
+            text-align: center;
+        }
 
-button{
-padding:15px;
-background:#ff4444;
-border:none;
-border-radius:10px;
-color:white;
-}
+        .label {
+            color: var(--text-gray);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
 
-</style>
+        .value {
+            font-size: 2.2rem;
+            font-family: 'Orbitron', sans-serif;
+            margin: 10px 0;
+        }
 
+        .optico-color { color: var(--accent-green); text-shadow: 0 0 10px rgba(212, 255, 0, 0.3); }
+        .mq2-color { color: var(--accent-red); text-shadow: 0 0 10px rgba(255, 68, 68, 0.3); }
+
+        /* Slider de Sensibilidade */
+        .slider-card {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 360px;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        input[type=range] {
+            width: 100%;
+            height: 6px;
+            background: #21262d;
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        /* Botões de Ação */
+        .actions-grid {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 30px;
+        }
+
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.7rem;
+            color: var(--text-gray);
+            text-transform: uppercase;
+        }
+
+        .btn-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            color: white;
+            transition: 0.3s;
+        }
+
+        .btn-circle:active {
+            box-shadow: inset 2px 2px 5px #000;
+            transform: scale(0.95);
+        }
+
+        .btn-silenciar { color: #ff9800; border: 1px solid #ff980033; }
+        .btn-testar { color: #448aff; border: 1px solid #448aff33; }
+        .btn-standby { color: #f44336; border: 1px solid #f4433633; }
+
+    </style>
 </head>
-
 <body>
 
-<h1>VOLARQ</h1>
+    <h1>VOLARQ •</h1>
+    <div id="status" class="status-text">Buscando conexão...</div>
 
-<div class="card">
+    <div class="dashboard-grid">
+        <div class="gauge-card">
+            <div class="label">Valor Óptico</div>
+            <div id="optico" class="value optico-color">0</div>
+            <div class="label" style="font-size: 0.6rem;">0 OPTICAL 3000</div>
+        </div>
 
-<h2>Status</h2>
+        <div class="gauge-card">
+            <div class="label">Valor MQ-2</div>
+            <div id="mq2" class="value mq2-color">0</div>
+            <div class="label" style="font-size: 0.6rem;">0 MQ-2 SENSOR 255</div>
+        </div>
+    </div>
 
-<div id="status">Offline</div>
+    <div class="slider-card">
+        <div class="label">Sensibilidade Sensor</div>
+        <input type="range" min="0" max="100" id="slider" value="50">
+        <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: #555; margin-top: 10px;">
+            <span>10%</span><span>50%</span><span>90%</span>
+        </div>
+    </div>
 
-</div>
+    <div class="actions-grid">
+        <div class="action-item">
+            <span>Silenciar</span>
+            <button class="btn-circle btn-silenciar" onclick="silenciar()"><i class="fas fa-power-off"></i></button>
+        </div>
+        <div class="action-item">
+            <span>Testar Buzzi</span>
+            <button class="btn-circle btn-testar"><i class="fas fa-volume-up"></i></button>
+        </div>
+        <div class="action-item">
+            <span>Stand-by</span>
+            <button class="btn-circle btn-standby"><strong>OFF</strong></button>
+        </div>
+    </div>
 
-<div class="card">
+    <script>
+        // Mantenha suas configurações de Firebase aqui
+        const firebaseConfig = {
+            apiKey: "COLE_AQUI",
+            databaseURL: "COLE_AQUI",
+        };
+        firebase.initializeApp(firebaseConfig);
+        var db = firebase.database();
 
-<h2>Sensor Óptico</h2>
+        db.ref("devices/volarq1").on("value", function(snapshot){
+            var data = snapshot.val();
+            if(data) {
+                document.getElementById("optico").innerHTML = data.optico || 0;
+                document.getElementById("mq2").innerHTML = data.mq2 || 0;
+                document.getElementById("status").innerHTML = data.status === "online" ? "Active" : "Inactive";
+                document.getElementById("status").style.color = data.status === "online" ? "#d4ff00" : "#8b949e";
+            }
+        });
 
-<div id="optico">0</div>
+        function silenciar(){
+            db.ref("devices/volarq1").update({ silenciar: true });
+        }
 
-</div>
-
-<div class="card">
-
-<h2>Sensor MQ2</h2>
-
-<div id="mq2">0</div>
-
-</div>
-
-<div class="card">
-
-<h2>Sensibilidade</h2>
-
-<input type="range" min="0" max="100" id="slider">
-
-</div>
-
-<div class="card">
-
-<button onclick="silenciar()">Silenciar</button>
-
-</div>
-
-<script>
-
-const firebaseConfig = {
-
-apiKey: "COLE_AQUI",
-
-databaseURL: "COLE_AQUI",
-
-};
-
-firebase.initializeApp(firebaseConfig);
-
-var db = firebase.database();
-
-db.ref("devices/volarq1").on("value", function(snapshot){
-
-var data = snapshot.val();
-
-document.getElementById("optico").innerHTML = data.optico;
-
-document.getElementById("mq2").innerHTML = data.mq2;
-
-if(data.status == "online"){
-document.getElementById("status").innerHTML="🟢 Online";
-}else{
-document.getElementById("status").innerHTML="🔴 Offline";
-}
-
-});
-
-function silenciar(){
-
-db.ref("devices/volarq1").update({
-
-silenciar:true
-
-});
-
-}
-
-document.getElementById("slider").oninput=function(){
-
-db.ref("devices/volarq1").update({
-
-sensibilidade:this.value
-
-});
-
-}
-
-</script>
-
+        document.getElementById("slider").oninput = function(){
+            db.ref("devices/volarq1").update({ sensibilidade: this.value });
+        }
+    </script>
 </body>
-
 </html>
