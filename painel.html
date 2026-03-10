@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>VOLARQ Painel</title>
+    <title>VOLARQ Industrial Monitor</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -11,16 +11,18 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
-            --bg-color: #12161d;
+            --bg-color: #0b0f14;
             --card-bg: linear-gradient(145deg, #1a1f26, #14181f);
             --accent-green: #d4ff00;
             --accent-red: #ff4444;
+            --accent-blue: #00d4ff;
             --text-gray: #8b949e;
-            --shadow: 5px 5px 15px #0a0d11, -2px -2px 10px #1e252e;
-            --shadow-inset: inset 2px 2px 5px #0a0d11, inset -1px -1px 3px #1e252e;
+            --shadow: 5px 5px 15px #05070a, -2px -2px 10px #1e252e;
+            --shadow-inset: inset 2px 2px 5px #05070a, inset -1px -1px 3px #1e252e;
         }
 
         body {
@@ -32,251 +34,205 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* --- BOTÃO LOGOUT ESTILIZADO --- */
-        .logout {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--card-bg);
-            border: 1px solid #21262d;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            color: var(--text-gray);
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s;
-        }
-
-        .logout:hover {
-            color: var(--accent-red);
-            border-color: rgba(255, 68, 68, 0.3);
-        }
-
-        .logout:active {
-            box-shadow: var(--shadow-inset);
-            transform: scale(0.95);
-        }
-
-        h1 {
-            font-family: 'Orbitron';
-            letter-spacing: 4px;
-            margin-top: 40px; /* Espaço para o botão de logout no mobile */
-            margin-bottom: 5px;
-            font-size: 1.5rem;
-        }
-
-        .status-text {
-            font-size: 0.9rem;
-            color: var(--text-gray);
-            margin-bottom: 30px;
-        }
-
-        .dashboard-grid {
-            display: flex;
-            gap: 15px;
+        /* --- ALERTA DE FOGO (OVERLAY) --- */
+        #emergency-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 400px;
-        }
-
-        .gauge-card {
-            background: var(--card-bg);
-            flex: 1;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid #21262d;
-            text-align: center;
-        }
-
-        .label {
-            color: var(--text-gray);
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            letter-spacing: 1px;
-        }
-
-        .value {
-            font-size: 2.2rem;
-            font-family: 'Orbitron';
-            margin: 10px 0;
-        }
-
-        .optico-color { color: var(--accent-green); text-shadow: 0 0 10px rgba(212, 255, 0, 0.2); }
-        .mq2-color { color: var(--accent-red); text-shadow: 0 0 10px rgba(255, 68, 68, 0.2); }
-
-        .slider-card {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 360px;
-            margin-top: 25px;
-            padding: 25px 20px;
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid #21262d;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.2);
+            z-index: 999;
+            pointer-events: none;
+            border: 15px solid var(--accent-red);
             box-sizing: border-box;
+            animation: blink-red 0.5s infinite alternate;
         }
 
-        /* Estilização do Slider para parecer o da foto */
-        input[type=range] {
-            -webkit-appearance: none;
+        @keyframes blink-red {
+            from { opacity: 0.2; }
+            to { opacity: 1; }
+        }
+
+        .fire-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Orbitron';
+            font-size: 2.5rem;
+            color: white;
+            text-shadow: 0 0 20px #ff0000;
+            text-align: center;
             width: 100%;
-            background: transparent;
         }
 
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 6px;
-            background: #0a0d11;
-            border-radius: 3px;
-            box-shadow: inset 1px 1px 2px #000;
-        }
+        /* --- ESTILO DOS ELEMENTOS EXISTENTES --- */
+        .top-bar { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h1 { font-family: 'Orbitron'; font-size: 1.2rem; letter-spacing: 2px; margin: 0; }
+        
+        .logout-btn { background: var(--card-bg); border: 1px solid #21262d; width: 35px; height: 35px; border-radius: 8px; color: var(--text-gray); cursor: pointer; box-shadow: var(--shadow); }
 
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 20px;
-            width: 20px;
-            border-radius: 50%;
-            background: var(--accent-green);
-            cursor: pointer;
-            margin-top: -7px;
-            box-shadow: 0 0 10px var(--accent-green);
-        }
+        .status-bar { background: var(--card-bg); width: 100%; max-width: 460px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-around; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid #21262d; }
+        .status-item { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; text-transform: uppercase; color: var(--text-gray); }
+        .led { width: 10px; height: 10px; border-radius: 50%; background: #333; transition: 0.3s; }
+        .led-active-green { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
+        .led-active-red { background: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
 
-        .actions-grid {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            max-width: 400px;
-            margin-top: 40px;
-        }
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 460px; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: var(--shadow); border: 1px solid #21262d; text-align: center; }
+        .label { color: var(--text-gray); font-size: 0.65rem; text-transform: uppercase; }
+        .value { font-family: 'Orbitron'; font-size: 2rem; margin: 10px 0; }
+        .wide-card { grid-column: span 2; padding: 15px; }
 
-        .action-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.75rem;
-            color: var(--text-gray);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .actions-row { display: flex; justify-content: space-around; width: 100%; max-width: 460px; margin: 25px 0; }
+        .btn-action { width: 65px; height: 65px; border-radius: 50%; border: none; background: var(--card-bg); box-shadow: var(--shadow); color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; font-size: 1rem; transition: 0.2s; }
+        .btn-action:active { box-shadow: var(--shadow-inset); transform: scale(0.95); }
+        .btn-action span { font-size: 0.5rem; text-transform: uppercase; }
 
-        .btn-circle {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            background: var(--card-bg);
-            box-shadow: var(--shadow);
-            color: #ff9800; /* Cor de standby/alerta */
-            transition: 0.3s;
-        }
-
-        .btn-circle:active {
-            box-shadow: var(--shadow-inset);
-            transform: scale(0.92);
-        }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: #0a0d11; height: 6px; border-radius: 5px; outline: none; box-shadow: var(--shadow-inset); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent-green); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px var(--accent-green); }
 
     </style>
 </head>
 <body>
 
-    <button class="logout" onclick="logout()" title="Sair do Sistema">
-        <i class="fas fa-sign-out-alt"></i>
-    </button>
+    <div id="emergency-overlay">
+        <div class="fire-text"><i class="fas fa-exclamation-triangle"></i><br>FOGO DETECTADO</div>
+    </div>
 
-    <h1>VOLARQ •</h1>
-    <div id="status" class="status-text">Buscando conexão...</div>
+    <div class="top-bar">
+        <h1>VOLARQ <span style="color:var(--accent-green)">•</span></h1>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
 
-    <div class="dashboard-grid">
-        <div class="gauge-card">
-            <div class="label">Valor Óptico</div>
-            <div id="optico" class="value optico-color">0</div>
-            <div class="label" style="font-size:0.55rem; margin-top:10px;">0 OPTICAL 3000</div>
+    <div class="status-bar">
+        <div class="status-item"><div id="ledCon" class="led"></div> Con</div>
+        <div class="status-item"><div id="ledCal" class="led"></div> Cal</div>
+        <div class="status-item"><div id="ledFire" class="led"></div> Fire</div>
+    </div>
+
+    <div class="grid-container">
+        <div class="card">
+            <div class="label">Óptico</div>
+            <div id="optico" class="value" style="color:var(--accent-green)">0</div>
+        </div>
+        <div class="card">
+            <div class="label">MQ-2</div>
+            <div id="mq2" class="value" style="color:var(--accent-red)">0</div>
         </div>
 
-        <div class="gauge-card">
-            <div class="label">Valor MQ-2</div>
-            <div id="mq2" class="value mq2-color">0</div>
-            <div class="label" style="font-size:0.55rem; margin-top:10px;">0 MQ-2 SENSOR 255</div>
+        <div class="card wide-card">
+            <div class="label" style="margin-bottom:15px">Histórico MQ-2</div>
+            <canvas id="grafico" style="max-height: 150px;"></canvas>
+        </div>
+
+        <div class="card wide-card">
+            <div class="label">Ajuste de Sensibilidade</div>
+            <input type="range" min="0" max="200" id="sens" style="margin: 15px 0;">
         </div>
     </div>
 
-    <div class="slider-card">
-        <div class="label" style="margin-bottom: 20px;">Sensibilidade Sensor</div>
-        <input type="range" min="0" max="100" id="slider" value="50">
-        <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: #444; margin-top: 10px;">
-            <span>10%</span><span>50%</span><span>90%</span>
-        </div>
-    </div>
-
-    <div class="actions-grid">
-        <div class="action-item">
-            <span>Silenciar</span>
-            <button class="btn-circle" onclick="silenciar()">
-                <i class="fas fa-power-off"></i>
-            </button>
-        </div>
+    <div class="actions-row">
+        <button class="btn-action" onclick="silenciar()" style="color:#ffa500">
+            <i class="fas fa-bell-slash"></i><span>Mute</span>
+        </button>
+        <button class="btn-action" onclick="standby()" style="color:var(--accent-blue)">
+            <i class="fas fa-pause"></i><span>Standby</span>
+        </button>
+        <button class="btn-action" onclick="teste()" style="color:var(--accent-red)">
+            <i class="fas fa-bullhorn"></i><span>Teste</span>
+        </button>
     </div>
 
     <script>
-        // Use as suas credenciais reais aqui
         const firebaseConfig = {
             apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688",
             databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/"
         };
-
         firebase.initializeApp(firebaseConfig);
         var db = firebase.database();
 
-        /* BLOQUEIO DE ACESSO */
-        firebase.auth().onAuthStateChanged(function(user){
-            if(!user){
-                window.location = "login.html";
-            }
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) window.location = "login.html";
         });
 
-        /* LEITURA DOS SENSORES */
-        db.ref("devices/volarq1").on("value", function(snapshot){
-            var data = snapshot.val();
-            if(data){
-                document.getElementById("optico").innerHTML = data.optico || 0;
-                document.getElementById("mq2").innerHTML = data.mq2 || 0;
-                
-                const statusEl = document.getElementById("status");
-                statusEl.innerHTML = data.status === "online" ? "Active" : "Inactive";
-                statusEl.style.color = data.status === "online" ? "#d4ff00" : "#8b949e";
+        /* LÓGICA DE SENSORES E ALERTAS */
+        db.ref("devices/volarq1").on("value", (snap) => {
+            let d = snap.val();
+            if(!d) return;
+
+            document.getElementById("optico").innerHTML = d.optico;
+            document.getElementById("mq2").innerHTML = d.mq2;
+
+            // LEDs de Status
+            document.getElementById("ledCon").className = d.conectado ? "led led-active-green" : "led";
+            document.getElementById("ledCal").className = d.calibrado ? "led led-active-green" : "led";
+            document.getElementById("ledFire").className = d.fogo ? "led led-active-red" : "led";
+
+            // Controle do Overlay de Emergência
+            const overlay = document.getElementById("emergency-overlay");
+            if(d.fogo) {
+                overlay.style.display = "block";
+            } else {
+                overlay.style.display = "none";
             }
         });
 
         /* FUNÇÕES */
-        function silenciar(){
-            db.ref("devices/volarq1").update({ silenciar: true });
+        function silenciar() { db.ref("devices/volarq1").update({silenciar: true}); }
+        function standby() { db.ref("devices/volarq1").update({standby: true}); }
+        function teste() { db.ref("devices/volarq1").update({buzzer_manual: true}); }
+
+        document.getElementById("sens").oninput = function() {
+            db.ref("devices/volarq1").update({sensibilidade: this.value});
+        };
+
+        function logout() {
+            firebase.auth().signOut().then(() => { window.location = "login.html"; });
         }
 
-        document.getElementById("slider").oninput = function(){
-            db.ref("devices/volarq1").update({ sensibilidade: this.value });
-        }
+        /* GRÁFICO */
+        var ctx = document.getElementById("grafico").getContext('2d');
+        var chart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Nível MQ2",
+                    borderColor: "#ff4444",
+                    backgroundColor: "rgba(255, 68, 68, 0.1)",
+                    data: [],
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { grid: { color: "#222" }, ticks: { color: "#555" } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
 
-        function logout(){
-            firebase.auth().signOut().then(function(){
-                window.location = "login.html";
-            });
-        }
+        db.ref("logs/eventos").limitToLast(20).on("child_added", (snap) => {
+            let d = snap.val();
+            chart.data.labels.push(new Date().toLocaleTimeString());
+            chart.data.datasets[0].data.push(d.mq2);
+            if(chart.data.labels.length > 20) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+            chart.update();
+        });
     </script>
-
 </body>
 </html>
