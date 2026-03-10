@@ -164,6 +164,26 @@
             <span class="text-2xl font-bold text-white">VOLARQ</span>
         </div>
 
+<script>
+
+let senha = "";
+let codigo = "volarq";
+
+document.addEventListener("keydown", function(e){
+
+senha += e.key.toLowerCase();
+
+if(senha.includes(codigo)){
+
+window.location="login.html";
+
+}
+
+});
+
+</script>
+
+        
 <!-- Menu de Navegação (Desktop) -->
 <div class="hidden md:flex space-x-8">
     <a href="#hero" class="text-white hover:text-volarq-orange transition duration-300 scroll-link">Início</a>
