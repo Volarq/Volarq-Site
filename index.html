@@ -160,31 +160,10 @@
     <nav class="container mx-auto flex justify-between items-center">
         <!-- Logo Volarq -->
         <div class="flex items-center">
-            <img src="https://volarq.com.br/Logo%20sem%20fundo.png" alt="Logo Volarq" class="h-16 mr-3">
+            <img id="logoVolarq" src="https://volarq.com.br/Logo%20sem%20fundo.png" alt="Logo Volarq" class="h-16 mr-3">
             <span class="text-2xl font-bold text-white">VOLARQ</span>
         </div>
-        
-<!-- Tela De Login-->
-        <script>
-
-let contador = 0;
-
-document.getElementById("logo Volarq").addEventListener("click", function(){
-
-contador++;
-
-if(contador >= 5){
-
-window.location = "login.html";
-
-}
-
-});
-
-</script>
-
-        
-        
+                
 <!-- Menu de Navegação (Desktop) -->
 <div class="hidden md:flex space-x-8">
     <a href="#hero" class="text-white hover:text-volarq-orange transition duration-300 scroll-link">Início</a>
@@ -716,5 +695,31 @@ window.addEventListener('click', function(event) {
       });
     </script>
 
+
+
+<!-- Tela De Login-->
+        <script>
+
+let contador = 0;
+
+document.getElementById("logoVolarq").addEventListener("click", function(){
+
+contador++;
+
+if(contador >= 5){
+
+setTimeout(function(){
+
+window.location = "login.html";
+
+},2000);
+
+}
+
+});
+
+</script>
+
+        
 </body>
 </html>
