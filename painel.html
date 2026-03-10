@@ -25,66 +25,27 @@
             --shadow-inset: inset 2px 2px 5px #05070a, inset -1px -1px 3px #1e252e;
         }
 
-        body {
-            background-color: var(--bg-color);
-            color: white;
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-        }
+        body { background-color: var(--bg-color); color: white; font-family: 'Roboto', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
 
-        /* --- ALERTA DE FOGO (OVERLAY) --- */
-        #emergency-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 0, 0, 0.2);
-            z-index: 999;
-            pointer-events: none;
-            border: 15px solid var(--accent-red);
-            box-sizing: border-box;
-            animation: blink-red 0.5s infinite alternate;
-        }
-
+        #emergency-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.2); z-index: 999; pointer-events: none; border: 15px solid var(--accent-red); box-sizing: border-box; animation: blink-red 0.5s infinite alternate; }
         @keyframes blink-red { from { opacity: 0.2; } to { opacity: 1; } }
+        .fire-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Orbitron'; font-size: 2.2rem; color: white; text-shadow: 0 0 20px #ff0000; text-align: center; width: 100%; }
 
-        .fire-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: 'Orbitron';
-            font-size: 2.5rem;
-            color: white;
-            text-shadow: 0 0 20px #ff0000;
-            text-align: center;
-            width: 100%;
-        }
-
-        /* --- LAYOUT --- */
         .top-bar { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         h1 { font-family: 'Orbitron'; font-size: 1.2rem; letter-spacing: 2px; margin: 0; }
+        .status-badge { font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; background: #21262d; margin-left: 10px; vertical-align: middle; }
         
         .logout-btn { background: var(--card-bg); border: 1px solid #21262d; width: 35px; height: 35px; border-radius: 8px; color: var(--text-gray); cursor: pointer; box-shadow: var(--shadow); }
 
-        .status-bar { background: var(--card-bg); width: 100%; max-width: 460px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-around; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid #21262d; }
+        .status-bar { background: var(--card-bg); width: 100%; max-width: 460px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-around; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid #21262d; box-sizing: border-box; }
         .status-item { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; text-transform: uppercase; color: var(--text-gray); }
         .led { width: 10px; height: 10px; border-radius: 50%; background: #333; transition: 0.3s; box-shadow: inset 0 0 5px #000; }
         
-        /* Classes de estado dos LEDs */
-        .led-green { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
-        .led-red { background: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
-        .led-off { background: #333; box-shadow: inset 0 0 5px #000; }
+        .led-green { background: var(--accent-green) !important; box-shadow: 0 0 10px var(--accent-green) !important; }
+        .led-red { background: var(--accent-red) !important; box-shadow: 0 0 10px var(--accent-red) !important; }
 
         .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 460px; }
-        .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: var(--shadow); border: 1px solid #21262d; text-align: center; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: var(--shadow); border: 1px solid #21262d; text-align: center; box-sizing: border-box; }
         .label { color: var(--text-gray); font-size: 0.65rem; text-transform: uppercase; }
         .value { font-family: 'Orbitron'; font-size: 2rem; margin: 10px 0; }
         .wide-card { grid-column: span 2; padding: 15px; }
@@ -96,7 +57,6 @@
 
         input[type=range] { -webkit-appearance: none; width: 100%; background: #0a0d11; height: 6px; border-radius: 5px; outline: none; box-shadow: var(--shadow-inset); }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent-green); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px var(--accent-green); }
-
     </style>
 </head>
 <body>
@@ -106,7 +66,7 @@
     </div>
 
     <div class="top-bar">
-        <h1>VOLARQ <span style="color:var(--accent-green)">•</span></h1>
+        <h1>VOLARQ <span id="conn-tag" class="status-badge">LINK OK</span></h1>
         <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
     </div>
 
@@ -119,21 +79,21 @@
     <div class="grid-container">
         <div class="card">
             <div class="label">Óptico</div>
-            <div id="optico" class="value" style="color:var(--accent-green)">0</div>
+            <div id="disp-optico" class="value" style="color:var(--accent-green)">0</div>
         </div>
         <div class="card">
             <div class="label">MQ-2</div>
-            <div id="mq2" class="value" style="color:var(--accent-red)">0</div>
+            <div id="disp-mq2" class="value" style="color:var(--accent-red)">0</div>
         </div>
 
         <div class="card wide-card">
-            <div class="label" style="margin-bottom:15px">Histórico MQ-2</div>
-            <canvas id="grafico" style="max-height: 150px;"></canvas>
+            <div class="label" style="margin-bottom:15px">Histórico de Eventos</div>
+            <div style="height: 150px;"><canvas id="grafico"></canvas></div>
         </div>
 
         <div class="card wide-card">
-            <div class="label">Ajuste de Sensibilidade</div>
-            <input type="range" min="0" max="200" id="sens" style="margin: 15px 0;">
+            <div class="label">Sensibilidade</div>
+            <input type="range" min="0" max="200" id="sens" value="100" style="margin: 15px 0;">
         </div>
     </div>
 
@@ -150,103 +110,89 @@
     </div>
 
     <script>
+        // CONFIGURAÇÕES
         const firebaseConfig = {
             apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688",
             databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/"
         };
         firebase.initializeApp(firebaseConfig);
-        var db = firebase.database();
+        const db = firebase.database();
+        let ultimoUpdate = Date.now();
 
+        // SEGURANÇA
         firebase.auth().onAuthStateChanged((user) => {
             if (!user) window.location = "login.html";
         });
 
-        /* --- LÓGICA DE MONITORAMENTO E WATCHDOG --- */
-        let ultimoUpdate = 0;
+        // REFERÊNCIAS DOM
+        const opticoText = document.getElementById("disp-optico");
+        const mq2Text = document.getElementById("disp-mq2");
+        const ledCon = document.getElementById("ledCon");
+        const ledCal = document.getElementById("ledCal");
+        const ledFire = document.getElementById("ledFire");
+        const connTag = document.getElementById("conn-tag");
 
+        // ESCUTA FIREBASE
         db.ref("devices/volarq1").on("value", (snap) => {
-            let d = snap.val();
+            const d = snap.val();
             if(!d) return;
 
-            // Atualização dos valores
-            document.getElementById("optico").innerHTML = d.optico || 0;
-            document.getElementById("mq2").innerHTML = d.mq2 || 0;
-
-            // Timestamp para o Watchdog
             ultimoUpdate = Date.now();
+            connTag.innerHTML = "LINK OK";
+            connTag.style.color = "var(--accent-green)";
 
-            // LEDs de Status (Com estilos visuais)
-            document.getElementById("ledCon").className = d.conectado ? "led led-green" : "led led-off";
-            document.getElementById("ledCal").className = d.calibrado ? "led led-green" : "led led-off";
-            document.getElementById("ledFire").className = d.fogo ? "led led-red" : "led led-off";
+            opticoText.innerHTML = d.optico || 0;
+            mq2Text.innerHTML = d.mq2 || 0;
 
-            // Overlay de Emergência
-            const overlay = document.getElementById("emergency-overlay");
-            overlay.style.display = d.fogo ? "block" : "none";
+            // LEDs
+            d.conectado ? ledCon.classList.add("led-green") : ledCon.classList.remove("led-green");
+            d.calibrado ? ledCal.classList.add("led-green") : ledCal.classList.remove("led-green");
+            
+            if(d.fogo) {
+                ledFire.classList.add("led-red");
+                document.getElementById("emergency-overlay").style.display = "block";
+            } else {
+                ledFire.classList.remove("led-red");
+                document.getElementById("emergency-overlay").style.display = "none";
+            }
         });
 
-        // Verificação de Conexão (Watchdog)
+        // WATCHDOG (VERIFICA SE O SENSOR MORREU)
         setInterval(() => {
-            let agora = Date.now();
-            if(agora - ultimoUpdate > 5000) {
-                // Sensor Offline - Limpa a tela
-                document.getElementById("optico").innerHTML = 0;
-                document.getElementById("mq2").innerHTML = 0;
-                document.getElementById("ledCon").className = "led led-off";
-                document.getElementById("ledCal").className = "led led-off";
-                document.getElementById("ledFire").className = "led led-off";
+            if(Date.now() - ultimoUpdate > 5000) {
+                opticoText.innerHTML = "---";
+                mq2Text.innerHTML = "---";
+                ledCon.classList.remove("led-green");
+                ledCal.classList.remove("led-green");
+                ledFire.classList.remove("led-red");
+                connTag.innerHTML = "OFFLINE";
+                connTag.style.color = "var(--accent-red)";
                 document.getElementById("emergency-overlay").style.display = "none";
             }
         }, 2000);
 
-        /* --- FUNÇÕES DE CONTROLE --- */
+        // BOTÕES
         function silenciar() { db.ref("devices/volarq1").update({silenciar: true}); }
         function standby() { db.ref("devices/volarq1").update({standby: true}); }
         function teste() { db.ref("devices/volarq1").update({buzzer_manual: true}); }
-
         document.getElementById("sens").oninput = function() {
             db.ref("devices/volarq1").update({sensibilidade: this.value});
         };
+        function logout() { firebase.auth().signOut().then(() => window.location = "login.html"); }
 
-        function logout() {
-            firebase.auth().signOut().then(() => { window.location = "login.html"; });
-        }
-
-        /* --- CONFIGURAÇÃO DO GRÁFICO --- */
-        var ctx = document.getElementById("grafico").getContext('2d');
-        var chart = new Chart(ctx, {
+        // GRÁFICO
+        const ctx = document.getElementById("grafico").getContext('2d');
+        const chart = new Chart(ctx, {
             type: "line",
-            data: {
-                labels: [],
-                datasets: [{
-                    label: "Nível MQ2",
-                    borderColor: "#ff4444",
-                    backgroundColor: "rgba(255, 68, 68, 0.1)",
-                    data: [],
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { display: false },
-                    y: { grid: { color: "#222" }, ticks: { color: "#555" } }
-                },
-                plugins: { legend: { display: false } }
-            }
+            data: { labels: [], datasets: [{ label: "MQ2", borderColor: "#ff4444", data: [], borderWidth: 2, pointRadius: 0, fill: true, backgroundColor: "rgba(255, 68, 68, 0.1)" }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { grid: { color: "#222" } } }, plugins: { legend: { display: false } } }
         });
 
         db.ref("logs/eventos").limitToLast(20).on("child_added", (snap) => {
-            let d = snap.val();
+            const val = snap.val();
             chart.data.labels.push(new Date().toLocaleTimeString());
-            chart.data.datasets[0].data.push(d.mq2);
-            if(chart.data.labels.length > 20) {
-                chart.data.labels.shift();
-                chart.data.datasets[0].data.shift();
-            }
+            chart.data.datasets[0].data.push(val.mq2);
+            if(chart.data.labels.length > 20) { chart.data.labels.shift(); chart.data.datasets[0].data.shift(); }
             chart.update();
         });
     </script>
