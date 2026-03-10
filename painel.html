@@ -22,6 +22,16 @@
         }
 
         body {
+
+            firebase.auth().onAuthStateChanged(function(user){
+
+if(!user){
+
+window.location="login.html";
+
+}
+
+});
             background-color: var(--bg-color);
             color: white;
             font-family: 'Roboto', sans-serif;
@@ -32,6 +42,7 @@
             align-items: center;
         }
 
+        
         h1 {
             font-family: 'Orbitron', sans-serif;
             letter-spacing: 4px;
@@ -225,17 +236,6 @@
             db.ref("devices/volarq1").update({ sensibilidade: this.value });
         }
 
-
-        firebase.auth().onAuthStateChanged(function(user){
-
-if(!user){
-
-window.location="login.html";
-    
-
-}
-
-});
     </script>
 </body>
 </html>
