@@ -53,10 +53,7 @@
             animation: blink-red 0.5s infinite alternate;
         }
 
-        @keyframes blink-red {
-            from { opacity: 0.2; }
-            to { opacity: 1; }
-        }
+        @keyframes blink-red { from { opacity: 0.2; } to { opacity: 1; } }
 
         .fire-text {
             position: absolute;
@@ -71,7 +68,7 @@
             width: 100%;
         }
 
-        /* --- ESTILO DOS ELEMENTOS EXISTENTES --- */
+        /* --- LAYOUT --- */
         .top-bar { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         h1 { font-family: 'Orbitron'; font-size: 1.2rem; letter-spacing: 2px; margin: 0; }
         
@@ -79,9 +76,12 @@
 
         .status-bar { background: var(--card-bg); width: 100%; max-width: 460px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-around; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid #21262d; }
         .status-item { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; text-transform: uppercase; color: var(--text-gray); }
-        .led { width: 10px; height: 10px; border-radius: 50%; background: #333; transition: 0.3s; }
-        .led-active-green { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
-        .led-active-red { background: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
+        .led { width: 10px; height: 10px; border-radius: 50%; background: #333; transition: 0.3s; box-shadow: inset 0 0 5px #000; }
+        
+        /* Classes de estado dos LEDs */
+        .led-green { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
+        .led-red { background: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
+        .led-off { background: #333; box-shadow: inset 0 0 5px #000; }
 
         .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 460px; }
         .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: var(--shadow); border: 1px solid #21262d; text-align: center; }
@@ -161,29 +161,45 @@
             if (!user) window.location = "login.html";
         });
 
-        /* LÓGICA DE SENSORES E ALERTAS */
+        /* --- LÓGICA DE MONITORAMENTO E WATCHDOG --- */
+        let ultimoUpdate = 0;
+
         db.ref("devices/volarq1").on("value", (snap) => {
             let d = snap.val();
             if(!d) return;
 
-            document.getElementById("optico").innerHTML = d.optico;
-            document.getElementById("mq2").innerHTML = d.mq2;
+            // Atualização dos valores
+            document.getElementById("optico").innerHTML = d.optico || 0;
+            document.getElementById("mq2").innerHTML = d.mq2 || 0;
 
-            // LEDs de Status
-            document.getElementById("ledCon").className = d.conectado ? "led led-active-green" : "led";
-            document.getElementById("ledCal").className = d.calibrado ? "led led-active-green" : "led";
-            document.getElementById("ledFire").className = d.fogo ? "led led-active-red" : "led";
+            // Timestamp para o Watchdog
+            ultimoUpdate = Date.now();
 
-            // Controle do Overlay de Emergência
+            // LEDs de Status (Com estilos visuais)
+            document.getElementById("ledCon").className = d.conectado ? "led led-green" : "led led-off";
+            document.getElementById("ledCal").className = d.calibrado ? "led led-green" : "led led-off";
+            document.getElementById("ledFire").className = d.fogo ? "led led-red" : "led led-off";
+
+            // Overlay de Emergência
             const overlay = document.getElementById("emergency-overlay");
-            if(d.fogo) {
-                overlay.style.display = "block";
-            } else {
-                overlay.style.display = "none";
-            }
+            overlay.style.display = d.fogo ? "block" : "none";
         });
 
-        /* FUNÇÕES */
+        // Verificação de Conexão (Watchdog)
+        setInterval(() => {
+            let agora = Date.now();
+            if(agora - ultimoUpdate > 5000) {
+                // Sensor Offline - Limpa a tela
+                document.getElementById("optico").innerHTML = 0;
+                document.getElementById("mq2").innerHTML = 0;
+                document.getElementById("ledCon").className = "led led-off";
+                document.getElementById("ledCal").className = "led led-off";
+                document.getElementById("ledFire").className = "led led-off";
+                document.getElementById("emergency-overlay").style.display = "none";
+            }
+        }, 2000);
+
+        /* --- FUNÇÕES DE CONTROLE --- */
         function silenciar() { db.ref("devices/volarq1").update({silenciar: true}); }
         function standby() { db.ref("devices/volarq1").update({standby: true}); }
         function teste() { db.ref("devices/volarq1").update({buzzer_manual: true}); }
@@ -196,7 +212,7 @@
             firebase.auth().signOut().then(() => { window.location = "login.html"; });
         }
 
-        /* GRÁFICO */
+        /* --- CONFIGURAÇÃO DO GRÁFICO --- */
         var ctx = document.getElementById("grafico").getContext('2d');
         var chart = new Chart(ctx, {
             type: "line",
