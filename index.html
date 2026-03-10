@@ -163,19 +163,19 @@
             <img src="https://volarq.com.br/Logo%20sem%20fundo.png" alt="Logo Volarq" class="h-16 mr-3">
             <span class="text-2xl font-bold text-white">VOLARQ</span>
         </div>
+        
+<!-- Tela De Login-->
+        <script>
 
-<script>
+let contador = 0;
 
-let senha = "";
-let codigo = "volarq";
+document.getElementById("logo").addEventListener("click", function(){
 
-document.addEventListener("keydown", function(e){
+contador++;
 
-senha += e.key.toLowerCase();
+if(contador >= 5){
 
-if(senha.includes(codigo)){
-
-window.location="login.html";
+window.location = "login.html";
 
 }
 
@@ -183,6 +183,7 @@ window.location="login.html";
 
 </script>
 
+        
         
 <!-- Menu de Navegação (Desktop) -->
 <div class="hidden md:flex space-x-8">
