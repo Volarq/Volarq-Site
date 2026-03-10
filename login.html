@@ -1,1 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login VOLARQ</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: linear-gradient(145deg, #1a1f26, #14181f);
+            --accent-green: #d4ff00;
+            --accent-red: #ff4444;
+            --input-bg: #0a0d11;
+            --shadow-outer: 10px 10px 20px #05070a, -5px -5px 15px #1e252e;
+            --shadow-inner: inset 3px 3px 6px #05070a, inset -1px -1px 3px #1e252e;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .login-container {
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 340px;
+            box-shadow: var(--shadow-outer);
+            border: 1px solid #21262d;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 5px;
+            color: #ffffff;
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            font-size: 0.75rem;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 35px;
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            font-size: 0.65rem;
+            color: #8b949e;
+            text-transform: uppercase;
+            margin-left: 10px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--accent-green);
+            font-family: 'Roboto', sans-serif;
+            font-size: 1rem;
+            box-shadow: var(--shadow-inner);
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            box-shadow: var(--shadow-inner), 0 0 5px rgba(212, 255, 0, 0.2);
+        }
+
+        input::placeholder {
+            color: #30363d;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 12px;
+            background: var(--accent-green);
+            color: #000;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(212, 255, 0, 0.3);
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background: #e5ff54;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 255, 0, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #erro {
+            color: var(--accent-red);
+            font-size: 0.75rem;
+            margin-top: 15px;
+            min-height: 1em;
+            font-weight: bold;
+        }
+
+        /* Decoração de fundo (opcional para dar clima industrial) */
+        .bg-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(212, 255, 0, 0.05) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <div class="login-container">
+        <h1>VOLARQ</h1>
+        <span class="subtitle">System Access</span>
+
+        <div class="input-group">
+            <label>Identificação</label>
+            <input type="email" id="email" placeholder="nome@email.com">
+        </div>
+
+        <div class="input-group">
+            <label>Chave de Segurança</label>
+            <input type="password" id="senha" placeholder="••••••••">
+        </div>
+
+        <button onclick="login()">Autenticar</button>
+
+        <div id="erro"></div>
+    </div>
+
+    <script>
+        // Configurações do Firebase
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_AUTH_DOMAIN"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        function login(){
+            const email = document.getElementById("email").value;
+            const senha = document.getElementById("senha").value;
+            const btn = document.querySelector("button");
+            const erroDiv = document.getElementById("erro");
+
+            if(!email || !senha) {
+                erroDiv.innerText = "Preencha todos os campos";
+                return;
+            }
+
+            btn.innerText = "VERIFICANDO...";
+            btn.style.opacity = "0.7";
+
+            firebase.auth().signInWithEmailAndPassword(email, senha)
+            .then(function(){
+                window.location = "painel.html";
+            })
+            .catch(function(error){
+                btn.innerText = "AUTENTICAR";
+                btn.style.opacity = "1";
+                erroDiv.innerText = "ACESSO NEGADO: Credenciais Inválidas";
+            });
+        }
+    </script>
+</body>
+</html>
