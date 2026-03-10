@@ -224,6 +224,18 @@
         document.getElementById("slider").oninput = function(){
             db.ref("devices/volarq1").update({ sensibilidade: this.value });
         }
+
+
+        firebase.auth().onAuthStateChanged(function(user){
+
+if(!user){
+
+window.location="login.html";
+    
+
+}
+
+});
     </script>
 </body>
 </html>
