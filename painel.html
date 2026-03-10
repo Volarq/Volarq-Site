@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>VOLARQ Painel</title>
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
     <style>
         :root {
@@ -19,19 +20,10 @@
             --accent-red: #ff4444;
             --text-gray: #8b949e;
             --shadow: 5px 5px 15px #0a0d11, -2px -2px 10px #1e252e;
+            --shadow-inset: inset 2px 2px 5px #0a0d11, inset -1px -1px 3px #1e252e;
         }
 
         body {
-
-            firebase.auth().onAuthStateChanged(function(user){
-
-if(!user){
-
-window.location="login.html";
-
-}
-
-});
             background-color: var(--bg-color);
             color: white;
             font-family: 'Roboto', sans-serif;
@@ -40,24 +32,52 @@ window.location="login.html";
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
         }
 
-        
+        /* --- BOTÃO LOGOUT ESTILIZADO --- */
+        .logout {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            border: 1px solid #21262d;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            color: var(--text-gray);
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .logout:hover {
+            color: var(--accent-red);
+            border-color: rgba(255, 68, 68, 0.3);
+        }
+
+        .logout:active {
+            box-shadow: var(--shadow-inset);
+            transform: scale(0.95);
+        }
+
         h1 {
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Orbitron';
             letter-spacing: 4px;
+            margin-top: 40px; /* Espaço para o botão de logout no mobile */
             margin-bottom: 5px;
             font-size: 1.5rem;
-            color: #ffffff;
         }
 
         .status-text {
             font-size: 0.9rem;
             color: var(--text-gray);
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
-        /* Container dos Gauges */
         .dashboard-grid {
             display: flex;
             gap: 15px;
@@ -77,97 +97,106 @@ window.location="login.html";
 
         .label {
             color: var(--text-gray);
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
             margin-bottom: 15px;
+            letter-spacing: 1px;
         }
 
         .value {
             font-size: 2.2rem;
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Orbitron';
             margin: 10px 0;
         }
 
-        .optico-color { color: var(--accent-green); text-shadow: 0 0 10px rgba(212, 255, 0, 0.3); }
-        .mq2-color { color: var(--accent-red); text-shadow: 0 0 10px rgba(255, 68, 68, 0.3); }
+        .optico-color { color: var(--accent-green); text-shadow: 0 0 10px rgba(212, 255, 0, 0.2); }
+        .mq2-color { color: var(--accent-red); text-shadow: 0 0 10px rgba(255, 68, 68, 0.2); }
 
-        /* Slider de Sensibilidade */
         .slider-card {
             background: var(--card-bg);
-            width: 90%;
+            width: 100%;
             max-width: 360px;
-            margin-top: 20px;
-            padding: 20px;
+            margin-top: 25px;
+            padding: 25px 20px;
             border-radius: 20px;
             box-shadow: var(--shadow);
+            border: 1px solid #21262d;
+            box-sizing: border-box;
         }
 
+        /* Estilização do Slider para parecer o da foto */
         input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
             height: 6px;
-            background: #21262d;
-            border-radius: 5px;
-            outline: none;
-            -webkit-appearance: none;
+            background: #0a0d11;
+            border-radius: 3px;
+            box-shadow: inset 1px 1px 2px #000;
         }
 
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px;
             height: 20px;
-            background: var(--accent-green);
+            width: 20px;
             border-radius: 50%;
+            background: var(--accent-green);
             cursor: pointer;
+            margin-top: -7px;
             box-shadow: 0 0 10px var(--accent-green);
         }
 
-        /* Botões de Ação */
         .actions-grid {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
             width: 100%;
             max-width: 400px;
-            margin-top: 30px;
+            margin-top: 40px;
         }
 
         .action-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
-            font-size: 0.7rem;
+            gap: 12px;
+            font-size: 0.75rem;
             color: var(--text-gray);
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .btn-circle {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             cursor: pointer;
             background: var(--card-bg);
             box-shadow: var(--shadow);
-            color: white;
+            color: #ff9800; /* Cor de standby/alerta */
             transition: 0.3s;
         }
 
         .btn-circle:active {
-            box-shadow: inset 2px 2px 5px #000;
-            transform: scale(0.95);
+            box-shadow: var(--shadow-inset);
+            transform: scale(0.92);
         }
-
-        .btn-silenciar { color: #ff9800; border: 1px solid #ff980033; }
-        .btn-testar { color: #448aff; border: 1px solid #448aff33; }
-        .btn-standby { color: #f44336; border: 1px solid #f4433633; }
 
     </style>
 </head>
 <body>
+
+    <button class="logout" onclick="logout()" title="Sair do Sistema">
+        <i class="fas fa-sign-out-alt"></i>
+    </button>
 
     <h1>VOLARQ •</h1>
     <div id="status" class="status-text">Buscando conexão...</div>
@@ -176,20 +205,20 @@ window.location="login.html";
         <div class="gauge-card">
             <div class="label">Valor Óptico</div>
             <div id="optico" class="value optico-color">0</div>
-            <div class="label" style="font-size: 0.6rem;">0 OPTICAL 3000</div>
+            <div class="label" style="font-size:0.55rem; margin-top:10px;">0 OPTICAL 3000</div>
         </div>
 
         <div class="gauge-card">
             <div class="label">Valor MQ-2</div>
             <div id="mq2" class="value mq2-color">0</div>
-            <div class="label" style="font-size: 0.6rem;">0 MQ-2 SENSOR 255</div>
+            <div class="label" style="font-size:0.55rem; margin-top:10px;">0 MQ-2 SENSOR 255</div>
         </div>
     </div>
 
     <div class="slider-card">
-        <div class="label">Sensibilidade Sensor</div>
+        <div class="label" style="margin-bottom: 20px;">Sensibilidade Sensor</div>
         <input type="range" min="0" max="100" id="slider" value="50">
-        <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: #555; margin-top: 10px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: #444; margin-top: 10px;">
             <span>10%</span><span>50%</span><span>90%</span>
         </div>
     </div>
@@ -197,37 +226,43 @@ window.location="login.html";
     <div class="actions-grid">
         <div class="action-item">
             <span>Silenciar</span>
-            <button class="btn-circle btn-silenciar" onclick="silenciar()"><i class="fas fa-power-off"></i></button>
-        </div>
-        <div class="action-item">
-            <span>Testar Buzzi</span>
-            <button class="btn-circle btn-testar"><i class="fas fa-volume-up"></i></button>
-        </div>
-        <div class="action-item">
-            <span>Stand-by</span>
-            <button class="btn-circle btn-standby"><strong>OFF</strong></button>
+            <button class="btn-circle" onclick="silenciar()">
+                <i class="fas fa-power-off"></i>
+            </button>
         </div>
     </div>
 
     <script>
-        // Mantenha suas configurações de Firebase aqui
+        // Use as suas credenciais reais aqui
         const firebaseConfig = {
             apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688",
-            databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/",
+            databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/"
         };
+
         firebase.initializeApp(firebaseConfig);
         var db = firebase.database();
 
-        db.ref("devices/volarq1").on("value", function(snapshot){
-            var data = snapshot.val();
-            if(data) {
-                document.getElementById("optico").innerHTML = data.optico || 0;
-                document.getElementById("mq2").innerHTML = data.mq2 || 0;
-                document.getElementById("status").innerHTML = data.status === "online" ? "Active" : "Inactive";
-                document.getElementById("status").style.color = data.status === "online" ? "#d4ff00" : "#8b949e";
+        /* BLOQUEIO DE ACESSO */
+        firebase.auth().onAuthStateChanged(function(user){
+            if(!user){
+                window.location = "login.html";
             }
         });
 
+        /* LEITURA DOS SENSORES */
+        db.ref("devices/volarq1").on("value", function(snapshot){
+            var data = snapshot.val();
+            if(data){
+                document.getElementById("optico").innerHTML = data.optico || 0;
+                document.getElementById("mq2").innerHTML = data.mq2 || 0;
+                
+                const statusEl = document.getElementById("status");
+                statusEl.innerHTML = data.status === "online" ? "Active" : "Inactive";
+                statusEl.style.color = data.status === "online" ? "#d4ff00" : "#8b949e";
+            }
+        });
+
+        /* FUNÇÕES */
         function silenciar(){
             db.ref("devices/volarq1").update({ silenciar: true });
         }
@@ -236,6 +271,12 @@ window.location="login.html";
             db.ref("devices/volarq1").update({ sensibilidade: this.value });
         }
 
+        function logout(){
+            firebase.auth().signOut().then(function(){
+                window.location = "login.html";
+            });
+        }
     </script>
+
 </body>
 </html>
