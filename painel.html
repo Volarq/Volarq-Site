@@ -2,331 +2,317 @@
 <html lang="pt-br">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VOLARQ Industrial | Painel</title>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
-<title>VOLARQ Painel</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --accent-cyan: #00f2ff;
+            --accent-green: #39ff14;
+            --accent-red: #ff3131;
+            --accent-yellow: #ffea00;
+            --text-main: #e6edf3;
+            --text-dim: #8b949e;
+        }
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-<style>
+        /* Top Bar */
+        .header-container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
 
-body{
-background:#0b0f14;
-font-family:Arial;
-color:white;
-text-align:center;
-}
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            margin: 0;
+            color: var(--accent-cyan);
+        }
 
-h1{
-margin-top:20px;
-}
+        /* Botão Sair */
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
 
-.painel{
+        .logout-btn:hover {
+            background: var(--accent-red);
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 49, 49, 0.4);
+        }
 
-display:flex;
-justify-content:center;
-flex-wrap:wrap;
-margin-top:30px;
+        /* Cards de Sensores */
+        .painel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
 
-}
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #30363d;
+            text-align: center;
+            transition: transform 0.2s;
+        }
 
-.card{
+        .card:hover { transform: translateY(-5px); }
 
-background:#161b22;
-padding:20px;
-margin:10px;
-border-radius:10px;
-width:180px;
+        .card-label {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
-}
+        .valor {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            margin-top: 10px;
+            color: var(--text-main);
+        }
 
-.valor{
+        /* Seção de LEDs */
+        .status-container {
+            background: #090c10;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 800px;
+            border: 1px inset #30363d;
+        }
 
-font-size:35px;
-margin-top:10px;
+        .led-item {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
 
-}
+        .led {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #21262d;
+            margin-right: 10px;
+            border: 2px solid #000;
+            transition: 0.3s;
+        }
 
-.led{
+        /* Estados dos LEDs */
+        .on { 
+            background: var(--accent-green); 
+            box-shadow: 0 0 10px var(--accent-green), inset 0 0 4px white; 
+            color: white;
+        }
+        .fire { 
+            background: var(--accent-red); 
+            box-shadow: 0 0 15px var(--accent-red), inset 0 0 4px white; 
+            animation: pulse 0.8s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; }
+        }
 
-width:15px;
-height:15px;
-border-radius:50%;
-background:#333;
-display:inline-block;
-margin-left:5px;
+        /* Controles */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
 
-}
+        .btn-action {
+            background: #21262d;
+            color: var(--text-main);
+            border: 1px solid #30363d;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
 
-.on{
+        .btn-action:hover { background: #30363d; border-color: #8b949e; }
+        .btn-action:active { transform: scale(0.95); }
 
-background:#00ff9c;
+        /* Slider de Sensibilidade */
+        .slider-box {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #30363d;
+        }
 
-}
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #0d1117;
+            border-radius: 5px;
+            outline: none;
+            margin: 15px 0;
+        }
 
-.fire{
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
 
-background:red;
-
-}
-
-button{
-
-padding:10px;
-margin:5px;
-border:none;
-border-radius:5px;
-cursor:pointer;
-
-}
-
-.slider{
-
-width:200px;
-
-}
-
-.logout{
-
-position:absolute;
-top:15px;
-right:20px;
-
-}
-
-</style>
-
+    </style>
 </head>
 
 <body>
 
-<button class="logout" onclick="logout()">Sair</button>
-
-<h1>VOLARQ Painel de Monitoramento</h1>
-
-<div class="painel">
-
-<div class="card">
-
-MQ2
-
-<div id="mq2" class="valor">0</div>
-
-</div>
-
-<div class="card">
-
-Sensor Óptico
-
-<div id="optico" class="valor">0</div>
-
-</div>
-
-</div>
-
-<br>
-
-Conectado <span id="led_conectado" class="led"></span>
-
-Aquecendo <span id="led_aquecendo" class="led"></span>
-
-Calibrando <span id="led_calibrando" class="led"></span>
-
-Monitorando <span id="led_monitorando" class="led"></span>
-
-FOGO <span id="led_fogo" class="led"></span>
-
-<br><br>
-
-<button onclick="silenciar()">Silenciar</button>
-
-<button onclick="standby()">Standby</button>
-
-<button onmousedown="testeBuzzer(true)" onmouseup="testeBuzzer(false)">Teste buzzer</button>
-
-<br><br>
-
-Sensibilidade
-
-<br>
-
-<input type="range" min="1" max="100" value="50" class="slider" id="slider">
-
-<script>
-
-const firebaseConfig = {
-
-apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688",
-
-databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/"
-
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const db = firebase.database();
-
-/* PROTEÇÃO LOGIN */
-
-firebase.auth().onAuthStateChanged(function(user){
-
-if(!user){
-
-window.location="login.html";
-
-}
-
-});
-
-/* RESET DO PAINEL */
-
-function resetPainel(){
-
-document.getElementById("mq2").innerHTML="0";
-document.getElementById("optico").innerHTML="0";
-
-document.getElementById("led_conectado").classList.remove("on");
-document.getElementById("led_aquecendo").classList.remove("on");
-document.getElementById("led_calibrando").classList.remove("on");
-document.getElementById("led_monitorando").classList.remove("on");
-document.getElementById("led_fogo").classList.remove("fire");
-
-}
-
-/* MONITORAR SENSOR */
-
-db.ref("sensor").on("value", function(snapshot){
-
-let data = snapshot.val();
-
-if(!data){
-
-resetPainel();
-return;
-
-}
-
-/* VERIFICAR TEMPO DA ULTIMA LEITURA */
-
-if(data.ultima_leitura){
-
-let agora = Date.now();
-
-if((agora - data.ultima_leitura) > 10000){
-
-resetPainel();
-return;
-
-}
-
-}
-
-/* VALORES */
-
-document.getElementById("mq2").innerHTML = data.mq2 || 0;
-document.getElementById("optico").innerHTML = data.optico || 0;
-
-/* LEDS */
-
-toggleLed("led_conectado", data.conectado);
-toggleLed("led_aquecendo", data.aquecendo);
-toggleLed("led_calibrando", data.calibrando);
-toggleLed("led_monitorando", data.monitorando);
-
-/* FOGO */
-
-if(data.fogo){
-
-document.getElementById("led_fogo").classList.add("fire");
-
-}else{
-
-document.getElementById("led_fogo").classList.remove("fire");
-
-}
-
-});
-
-/* FUNÇÃO LED */
-
-function toggleLed(id,estado){
-
-let led = document.getElementById(id);
-
-if(estado){
-
-led.classList.add("on");
-
-}else{
-
-led.classList.remove("on");
-
-}
-
-}
-
-/* BOTÕES */
-
-function silenciar(){
-
-db.ref("comandos").update({
-
-silenciar:true
-
-});
-
-}
-
-function standby(){
-
-db.ref("comandos").update({
-
-standby:true
-
-});
-
-}
-
-function testeBuzzer(estado){
-
-db.ref("comandos").update({
-
-teste:estado
-
-});
-
-}
-
-/* SLIDER */
-
-document.getElementById("slider").oninput = function(){
-
-db.ref("config").update({
-
-sensibilidade:this.value
-
-});
-
-}
-
-/* LOGOUT */
-
-function logout(){
-
-firebase.auth().signOut().then(function(){
-
-window.location="login.html";
-
-});
-
-}
-
-</script>
-
+    <div class="header-container">
+        <h1>VOLARQ <span style="font-weight:300; color:white">SYS</span></h1>
+        <button class="logout-btn" onclick="logout()">LOGOUT</button>
+    </div>
+
+    <div class="painel">
+        <div class="card">
+            <div class="card-label">Nível de Gás (MQ2)</div>
+            <div id="mq2" class="valor">0</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Sensor Óptico</div>
+            <div id="optico" class="valor">0</div>
+        </div>
+    </div>
+
+    <div class="status-container">
+        <div class="led-item"><div id="led_conectado" class="led"></div> CONECTADO</div>
+        <div class="led-item"><div id="led_aquecendo" class="led"></div> AQUECENDO</div>
+        <div class="led-item"><div id="led_calibrando" class="led"></div> CALIBRANDO</div>
+        <div class="led-item"><div id="led_monitorando" class="led"></div> MONITORANDO</div>
+        <div class="led-item" style="color:var(--accent-red)"><div id="led_fogo" class="led"></div> ALERTA FOGO</div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-action" onclick="silenciar()">SILENCIAR</button>
+        <button class="btn-action" onclick="standby()">STANDBY</button>
+        <button class="btn-action" onmousedown="testeBuzzer(true)" onmouseup="testeBuzzer(false)">TESTAR BUZZER</button>
+    </div>
+
+    <div class="slider-box">
+        <div class="card-label" style="margin-bottom:10px">Ajuste de Sensibilidade</div>
+        <input type="range" min="1" max="100" value="50" class="slider" id="slider">
+        <div style="display:flex; justify-content:space-between; font-size: 10px; color:var(--text-dim)">
+            <span>BAIXA</span>
+            <span>ALTA</span>
+        </div>
+    </div>
+
+    <script>
+        // Mantenha seu código JavaScript exatamente como está, 
+        // ele funcionará perfeitamente com essas novas classes.
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688",
+            databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        firebase.auth().onAuthStateChanged(function(user){
+            if(!user){ window.location="login.html"; }
+        });
+
+        function resetPainel(){
+            document.getElementById("mq2").innerHTML="0";
+            document.getElementById("optico").innerHTML="0";
+            ["led_conectado", "led_aquecendo", "led_calibrando", "led_monitorando"].forEach(id => {
+                document.getElementById(id).classList.remove("on");
+            });
+            document.getElementById("led_fogo").classList.remove("fire");
+        }
+
+        db.ref("sensor").on("value", function(snapshot){
+            let data = snapshot.val();
+            if(!data){ resetPainel(); return; }
+
+            if(data.ultima_leitura){
+                let agora = Date.now();
+                if((agora - data.ultima_leitura) > 10000){ resetPainel(); return; }
+            }
+
+            document.getElementById("mq2").innerHTML = data.mq2 || 0;
+            document.getElementById("optico").innerHTML = data.optico || 0;
+
+            toggleLed("led_conectado", data.conectado);
+            toggleLed("led_aquecendo", data.aquecendo);
+            toggleLed("led_calibrando", data.calibrando);
+            toggleLed("led_monitorando", data.monitorando);
+
+            if(data.fogo){
+                document.getElementById("led_fogo").classList.add("fire");
+            }else{
+                document.getElementById("led_fogo").classList.remove("fire");
+            }
+        });
+
+        function toggleLed(id, estado){
+            let led = document.getElementById(id);
+            estado ? led.classList.add("on") : led.classList.remove("on");
+        }
+
+        function silenciar(){ db.ref("comandos").update({ silenciar: true }); }
+        function standby(){ db.ref("comandos").update({ standby: true }); }
+        function testeBuzzer(estado){ db.ref("comandos").update({ teste: estado }); }
+
+        document.getElementById("slider").oninput = function(){
+            db.ref("config").update({ sensibilidade: this.value });
+        }
+
+        function logout(){
+            firebase.auth().signOut().then(function(){ window.location="login.html"; });
+        }
+    </script>
 </body>
-
 </html>
