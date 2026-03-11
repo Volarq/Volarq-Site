@@ -19,6 +19,7 @@
             --accent-green: #39ff14;
             --accent-red: #ff3131;
             --accent-yellow: #ffea00;
+            --accent-orange: #ff9800;
             --text-main: #e6edf3;
             --text-dim: #8b949e;
         }
@@ -34,7 +35,6 @@
             align-items: center;
         }
 
-        /* Top Bar */
         .header-container {
             width: 100%;
             max-width: 800px;
@@ -54,7 +54,6 @@
             color: var(--accent-cyan);
         }
 
-        /* Botão Sair */
         .logout-btn {
             background: transparent;
             border: 1px solid var(--accent-red);
@@ -67,13 +66,6 @@
             font-size: 0.8rem;
         }
 
-        .logout-btn:hover {
-            background: var(--accent-red);
-            color: white;
-            box-shadow: 0 0 15px rgba(255, 49, 49, 0.4);
-        }
-
-        /* Cards de Sensores */
         .painel {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -88,16 +80,6 @@
             border-radius: 12px;
             border: 1px solid #30363d;
             text-align: center;
-            transition: transform 0.2s;
-        }
-
-        .card:hover { transform: translateY(-5px); }
-
-        .card-label {
-            color: var(--text-dim);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
         .valor {
@@ -107,7 +89,6 @@
             color: var(--text-main);
         }
 
-        /* Seção de LEDs */
         .status-container {
             background: #090c10;
             padding: 20px;
@@ -139,27 +120,13 @@
             transition: 0.3s;
         }
 
-        /* Estados dos LEDs */
-        .on { 
-            background: var(--accent-green); 
-            box-shadow: 0 0 10px var(--accent-green), inset 0 0 4px white; 
-            color: white;
-        }
-        .fire { 
-            background: var(--accent-red); 
-            box-shadow: 0 0 15px var(--accent-red), inset 0 0 4px white; 
-            animation: pulse 0.8s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; }
-        }
+        .on { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
+        .fire { background: var(--accent-red); box-shadow: 0 0 15px var(--accent-red); animation: pulse 0.8s infinite; }
+        .standby-on { background: var(--accent-orange); box-shadow: 0 0 10px var(--accent-orange); }
 
-        /* Controles */
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .controls { display: flex; gap: 10px; margin-bottom: 30px; align-items: center; flex-wrap: wrap; justify-content: center;}
 
         .btn-action {
             background: #21262d;
@@ -169,13 +136,20 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn-action:hover { background: #30363d; border-color: #8b949e; }
-        .btn-action:active { transform: scale(0.95); }
+        #silenciar-timer {
+            font-family: 'Orbitron';
+            color: var(--accent-yellow);
+            font-size: 0.9rem;
+            margin-left: 5px;
+            min-width: 45px;
+            display: inline-block;
+        }
 
-        /* Slider de Sensibilidade */
         .slider-box {
             background: var(--card-bg);
             padding: 20px;
@@ -185,26 +159,8 @@
             border: 1px solid #30363d;
         }
 
-        .slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
-            background: #0d1117;
-            border-radius: 5px;
-            outline: none;
-            margin: 15px 0;
-        }
-
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            background: var(--accent-cyan);
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 10px var(--accent-cyan);
-        }
-
+        .slider { -webkit-appearance: none; width: 100%; height: 6px; background: #0d1117; border-radius: 5px; outline: none; }
+        .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent-cyan); border-radius: 50%; cursor: pointer; }
     </style>
 </head>
 
@@ -217,11 +173,11 @@
 
     <div class="painel">
         <div class="card">
-            <div class="card-label">Nível de Gás (MQ2)</div>
+            <div style="color: var(--text-dim); font-size: 0.8rem;">MQ2</div>
             <div id="mq2" class="valor">0</div>
         </div>
         <div class="card">
-            <div class="card-label">Sensor Óptico</div>
+            <div style="color: var(--text-dim); font-size: 0.8rem;">SENSOR ÓPTICO</div>
             <div id="optico" class="valor">0</div>
         </div>
     </div>
@@ -231,28 +187,25 @@
         <div class="led-item"><div id="led_aquecendo" class="led"></div> AQUECENDO</div>
         <div class="led-item"><div id="led_calibrando" class="led"></div> CALIBRANDO</div>
         <div class="led-item"><div id="led_monitorando" class="led"></div> MONITORANDO</div>
-        <div class="led-item" style="color:var(--accent-red)"><div id="led_fogo" class="led"></div> ALERTA FOGO</div>
+        <div class="led-item" style="color:var(--accent-red)"><div id="led_fogo" class="led"></div> FOGO</div>
     </div>
 
     <div class="controls">
-        <button class="btn-action" onclick="silenciar()">SILENCIAR</button>
-        <button class="btn-action" onclick="standby()">STANDBY</button>
+        <button class="btn-action" onclick="silenciar()">
+            SILENCIAR <span id="silenciar-timer"></span>
+        </button>
+        <button class="btn-action" onclick="standby()">
+            <div id="led_standby_btn" class="led" style="margin:0"></div> STANDBY
+        </button>
         <button class="btn-action" onmousedown="testeBuzzer(true)" onmouseup="testeBuzzer(false)">TESTAR BUZZER</button>
     </div>
 
     <div class="slider-box">
-        <div class="card-label" style="margin-bottom:10px">Ajuste de Sensibilidade</div>
+        <div style="color: var(--text-dim); font-size: 0.8rem; margin-bottom:10px">SENSIBILIDADE</div>
         <input type="range" min="1" max="100" value="50" class="slider" id="slider">
-        <div style="display:flex; justify-content:space-between; font-size: 10px; color:var(--text-dim)">
-            <span>BAIXA</span>
-            <span>ALTA</span>
-        </div>
     </div>
 
     <script>
-        // Mantenha seu código JavaScript exatamente como está, 
-        // ele funcionará perfeitamente com essas novas classes.
-
         const firebaseConfig = {
             apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688",
             databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/"
@@ -260,27 +213,19 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        let timerInterval;
+
         firebase.auth().onAuthStateChanged(function(user){
             if(!user){ window.location="login.html"; }
         });
 
-        function resetPainel(){
-            document.getElementById("mq2").innerHTML="0";
-            document.getElementById("optico").innerHTML="0";
-            ["led_conectado", "led_aquecendo", "led_calibrando", "led_monitorando"].forEach(id => {
-                document.getElementById(id).classList.remove("on");
-            });
-            document.getElementById("led_fogo").classList.remove("fire");
-        }
+        /* MONITORAR SENSOR E COMANDOS */
+        db.ref().on("value", function(snapshot){
+            let allData = snapshot.val();
+            let data = allData.sensor;
+            let comandos = allData.comandos;
 
-        db.ref("sensor").on("value", function(snapshot){
-            let data = snapshot.val();
             if(!data){ resetPainel(); return; }
-
-            if(data.ultima_leitura){
-                let agora = Date.now();
-                if((agora - data.ultima_leitura) > 10000){ resetPainel(); return; }
-            }
 
             document.getElementById("mq2").innerHTML = data.mq2 || 0;
             document.getElementById("optico").innerHTML = data.optico || 0;
@@ -290,28 +235,59 @@
             toggleLed("led_calibrando", data.calibrando);
             toggleLed("led_monitorando", data.monitorando);
 
-            if(data.fogo){
-                document.getElementById("led_fogo").classList.add("fire");
-            }else{
-                document.getElementById("led_fogo").classList.remove("fire");
-            }
+            // LED Fogo
+            if(data.fogo) document.getElementById("led_fogo").classList.add("fire");
+            else document.getElementById("led_fogo").classList.remove("fire");
+
+            // LED Standby (Lendo da aba comandos)
+            if(comandos && comandos.standby) document.getElementById("led_standby_btn").classList.add("standby-on");
+            else document.getElementById("led_standby_btn").classList.remove("standby-on");
         });
 
         function toggleLed(id, estado){
             let led = document.getElementById(id);
-            estado ? led.classList.add("on") : led.classList.remove("on");
+            if(estado) led.classList.add("on");
+            else led.classList.remove("on");
         }
 
-        function silenciar(){ db.ref("comandos").update({ silenciar: true }); }
-        function standby(){ db.ref("comandos").update({ standby: true }); }
+        function silenciar(){
+            db.ref("comandos").update({ silenciar: true });
+            
+            // Lógica do Timer (120 segundos como exemplo)
+            clearInterval(timerInterval);
+            let tempo = 120;
+            const display = document.getElementById("silenciar-timer");
+            
+            timerInterval = setInterval(() => {
+                let minutos = Math.floor(tempo / 60);
+                let segundos = tempo % 60;
+                display.innerHTML = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+                
+                if (--tempo < 0) {
+                    clearInterval(timerInterval);
+                    display.innerHTML = "";
+                    db.ref("comandos").update({ silenciar: false });
+                }
+            }, 1000);
+        }
+
+        function standby(){
+            db.ref("comandos/standby").once('value').then(snap => {
+                db.ref("comandos").update({ standby: !snap.val() });
+            });
+        }
+
         function testeBuzzer(estado){ db.ref("comandos").update({ teste: estado }); }
 
         document.getElementById("slider").oninput = function(){
             db.ref("config").update({ sensibilidade: this.value });
         }
 
-        function logout(){
-            firebase.auth().signOut().then(function(){ window.location="login.html"; });
+        function logout(){ firebase.auth().signOut().then(() => window.location="login.html"); }
+
+        function resetPainel(){
+            document.getElementById("mq2").innerHTML="0";
+            document.getElementById("optico").innerHTML="0";
         }
     </script>
 </body>
