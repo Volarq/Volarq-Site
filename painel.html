@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>VOLARQ Industrial</title>
+    <title>VOLARQ Industrial - Painel</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -39,7 +39,7 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 0, 0, 0.3);
+            background: rgba(255, 0, 0, 0.4);
             z-index: 1000;
             border: 20px solid var(--accent-red);
             box-sizing: border-box;
@@ -47,7 +47,7 @@
             pointer-events: none;
         }
 
-        @keyframes blink { from { opacity: 0.3; } to { opacity: 1; } }
+        @keyframes blink { from { opacity: 0.4; } to { opacity: 1; } }
 
         .header { width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         h1 { font-family: 'Orbitron'; font-size: 1.5rem; letter-spacing: 4px; margin: 0; }
@@ -75,16 +75,16 @@
         }
 
         .actions { display: flex; justify-content: space-around; width: 100%; max-width: 400px; margin-top: 30px; }
-        .btn-container { text-align: center; }
+        .btn-container { text-align: center; min-width: 80px; }
         .btn-circle {
-            width: 70px; height: 70px; border-radius: 50%; background: var(--card-bg); 
+            width: 60px; height: 60px; border-radius: 50%; background: var(--card-bg); 
             box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.05);
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; cursor: pointer; transition: 0.3s; margin-bottom: 8px;
+            font-size: 1.3rem; cursor: pointer; transition: 0.3s; margin: 0 auto 8px;
             outline: none;
         }
         .btn-circle:active { box-shadow: var(--shadow-inset); transform: scale(0.95); }
-        .btn-label { font-size: 0.65rem; color: var(--text-gray); text-transform: uppercase; font-weight: bold; }
+        .btn-label { font-size: 0.6rem; color: var(--text-gray); text-transform: uppercase; font-weight: bold; }
 
         #timer { font-size: 0.7rem; color: var(--accent-red); font-family: 'Orbitron'; display: block; height: 15px; margin-top: 2px;}
     </style>
@@ -93,14 +93,14 @@
 
     <div id="emergency-overlay">
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 100%;">
-            <h2 style="font-family: 'Orbitron'; font-size: 2rem; color: white; text-shadow: 0 0 10px red;">FOGO DETECTADO</h2>
+            <h2 style="font-family: 'Orbitron'; font-size: 2rem; color: white; text-shadow: 0 0 15px red;">FOGO DETECTADO</h2>
         </div>
     </div>
 
     <div class="header">
         <div>
             <h1>VOLARQ •</h1>
-            <div id="status-link" class="status-text">Iniciando...</div>
+            <div id="status-link" class="status-text">Conectando...</div>
         </div>
         <button onclick="logout()" style="background:none; border:none; color:var(--text-gray); cursor:pointer; font-size:1.2rem;">
             <i class="fas fa-sign-out-alt"></i>
@@ -136,11 +136,19 @@
             <div class="btn-label">Verificado</div>
             <div id="timer"></div>
         </div>
+
+        <div class="btn-container" id="mute-container" style="display: none;">
+            <button class="btn-circle" onclick="silenciarPainel()" style="color: #ff4444;">
+                <i class="fas fa-bell-slash"></i>
+            </button>
+            <div class="btn-label">Silenciar</div>
+        </div>
+
         <div class="btn-container">
             <button class="btn-circle" onclick="testeBuzzer()" style="color: #00d4ff;">
                 <i class="fas fa-volume-up"></i>
             </button>
-            <div class="btn-label">Testar Buzzi</div>
+            <div class="btn-label">Testar Buzzer</div>
         </div>
         <div class="btn-container">
             <button class="btn-circle" onclick="toggleStandby()" style="color: #ff9800;">
@@ -159,12 +167,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
-        // Inicializa EmailJS (Substitua pela sua chave real)
         emailjs.init("SUA_PUBLIC_KEY");
 
         let ultimoTempo = Date.now();
         let suspenso = false;
         let emailJaEnviado = false;
+        let primeiraCarga = true; // IMPEDE DISPARO AO ABRIR PAGINA
+        let mutadoManual = false;
 
         // --- MONITORAMENTO EM TEMPO REAL ---
         db.ref("devices/volarq1").on("value", (snap) => {
@@ -175,41 +184,46 @@
             document.getElementById("status-link").innerHTML = "Sistema Ativo";
             document.getElementById("status-link").style.color = "var(--accent-green)";
 
-            // Atualiza Interface
+            // Atualiza Interface Básica
             document.getElementById("val-optico").innerText = data.optico || 0;
             document.getElementById("val-mq2").innerText = data.mq2 || 0;
             document.getElementById("sens-input").value = data.sensibilidade || 100;
 
-            // Lógica de Alerta de Fogo
             const overlay = document.getElementById("emergency-overlay");
-            
-            if(data.fogo === true && suspenso === false) {
-                overlay.style.display = "block";
-                
-                // Disparo único de e-mail por evento
-                if(!emailJaEnviado) {
-                    enviarEmailAlerta();
-                    emailJaEnviado = true;
+            const muteBtn = document.getElementById("mute-container");
+
+            // Lógica Inteligente de Fogo
+            if(data.fogo === true) {
+                // Só dispara se NÃO for a primeira carga e NÃO estiver em standby/suspenso/mutado
+                if(!primeiraCarga && !suspenso && !mutadoManual && !data.standby) {
+                    overlay.style.display = "block";
+                    muteBtn.style.display = "block";
+                    
+                    if(!emailJaEnviado) {
+                        enviarEmailAlerta();
+                        emailJaEnviado = true;
+                    }
                 }
             } else {
+                // Reset total quando o fogo apaga no sensor
                 overlay.style.display = "none";
-                // Reseta a trava se o fogo for resolvido no banco
-                if(data.fogo === false) emailJaEnviado = false;
+                muteBtn.style.display = "none";
+                emailJaEnviado = false;
+                mutadoManual = false;
             }
+
+            primeiraCarga = false; // Após ler a primeira vez, libera o monitoramento real
         });
 
-        // --- DETECTOR DE DESCONEXÃO (WATCHDOG) ---
+        // --- WATCHDOG (OFFLINE) ---
         setInterval(() => {
             if(Date.now() - ultimoTempo > 5000) {
-                document.getElementById("val-optico").innerText = "---";
-                document.getElementById("val-mq2").innerText = "---";
                 document.getElementById("status-link").innerHTML = "Dispositivo Offline";
                 document.getElementById("status-link").style.color = "var(--accent-red)";
                 document.getElementById("emergency-overlay").style.display = "none";
             }
         }, 2000);
 
-        // --- FUNÇÃO ENVIO DE EMAIL ---
         function enviarEmailAlerta() {
             const agora = new Date();
             const params = {
@@ -217,13 +231,18 @@
                 hora: agora.toLocaleTimeString('pt-BR'),
                 to_email: "volarq.oficial@gmail.com"
             };
-
             emailjs.send("SEU_SERVICE_ID", "SEU_TEMPLATE_ID", params)
                 .then(() => console.log("E-mail enviado!"))
                 .catch((err) => console.error("Erro e-mail:", err));
         }
 
-        // --- AÇÕES DOS BOTÕES ---
+        // --- AÇÕES ---
+        function silenciarPainel() {
+            mutadoManual = true;
+            document.getElementById("emergency-overlay").style.display = "none";
+            document.getElementById("mute-container").style.display = "none";
+        }
+
         function verificarFogo() {
             suspenso = true;
             let seg = 120;
@@ -244,7 +263,13 @@
         }
 
         function testeBuzzer() { db.ref("devices/volarq1").update({ buzzer_manual: true }); }
-        function toggleStandby() { db.ref("devices/volarq1").update({ standby: true }); }
+        
+        function toggleStandby() { 
+            // Alterna o estado de standby no banco
+            db.ref("devices/volarq1/standby").once('value').then(snap => {
+                db.ref("devices/volarq1").update({ standby: !snap.val() });
+            });
+        }
         
         document.getElementById("sens-input").oninput = function() {
             db.ref("devices/volarq1").update({ sensibilidade: this.value });
