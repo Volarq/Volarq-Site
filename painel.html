@@ -7,6 +7,7 @@
     <title>VOLARQ Industrial | Painel</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -157,10 +158,13 @@
             width: 100%;
             max-width: 400px;
             border: 1px solid #30363d;
+            text-align: center;
         }
 
         .slider { -webkit-appearance: none; width: 100%; height: 6px; background: #0d1117; border-radius: 5px; outline: none; }
         .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent-cyan); border-radius: 50%; cursor: pointer; }
+        
+        #val-sens { color: var(--accent-cyan); font-weight: bold; margin-left: 5px; }
     </style>
 </head>
 
@@ -201,11 +205,14 @@
     </div>
 
     <div class="slider-box">
-        <div style="color: var(--text-dim); font-size: 0.8rem; margin-bottom:10px">SENSIBILIDADE</div>
-        <input type="range" min="1" max="100" value="50" class="slider" id="slider">
+        <div style="color: var(--text-dim); font-size: 0.8rem; margin-bottom:10px">
+            SENSIBILIDADE: <span id="val-sens">200</span>
+        </div>
+        <input type="range" min="10" max="1000" value="200" class="slider" id="slider">
     </div>
 
     <script>
+        // Configurações do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688",
             databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/"
@@ -214,46 +221,72 @@
         const db = firebase.database();
 
         let timerInterval;
+        let sliderAtivo = false;
 
+        // Proteção de Rota
         firebase.auth().onAuthStateChanged(function(user){
             if(!user){ window.location="login.html"; }
         });
 
-        /* MONITORAR SENSOR E COMANDOS */
+        /* MONITORAMENTO EM TEMPO REAL */
         db.ref().on("value", function(snapshot){
             let allData = snapshot.val();
+            if(!allData) return;
+
             let data = allData.sensor;
             let comandos = allData.comandos;
+            let config = allData.config;
 
-            if(!data){ resetPainel(); return; }
+            // 1. Atualizar Leituras dos Sensores
+            if(data){
+                document.getElementById("mq2").innerText = data.mq2 || 0;
+                document.getElementById("optico").innerText = data.optico || 0;
 
-            document.getElementById("mq2").innerHTML = data.mq2 || 0;
-            document.getElementById("optico").innerHTML = data.optico || 0;
+                toggleLed("led_conectado", data.conectado);
+                toggleLed("led_aquecendo", data.aquecendo);
+                toggleLed("led_calibrando", data.calibrando);
+                toggleLed("led_monitorando", data.monitorando);
 
-            toggleLed("led_conectado", data.conectado);
-            toggleLed("led_aquecendo", data.aquecendo);
-            toggleLed("led_calibrando", data.calibrando);
-            toggleLed("led_monitorando", data.monitorando);
+                // Status de Alerta de Fogo
+                if(data.fogo) document.getElementById("led_fogo").classList.add("fire");
+                else document.getElementById("led_fogo").classList.remove("fire");
+            }
 
-            // LED Fogo
-            if(data.fogo) document.getElementById("led_fogo").classList.add("fire");
-            else document.getElementById("led_fogo").classList.remove("fire");
+            // 2. Sincronizar Slider de Sensibilidade (apenas se o usuário não estiver mexendo agora)
+            if(config && config.sensibilidade && !sliderAtivo){
+                document.getElementById("slider").value = config.sensibilidade;
+                document.getElementById("val-sens").innerText = config.sensibilidade;
+            }
 
-            // LED Standby (Lendo da aba comandos)
+            // 3. Atualizar Botão de Standby
             if(comandos && comandos.standby) document.getElementById("led_standby_btn").classList.add("standby-on");
             else document.getElementById("led_standby_btn").classList.remove("standby-on");
         });
 
+        // Função auxiliar para LEDs de status
         function toggleLed(id, estado){
             let led = document.getElementById(id);
             if(estado) led.classList.add("on");
             else led.classList.remove("on");
         }
 
+        // --- CONTROLES DO USUÁRIO ---
+
+        // Sensibilidade
+        const slider = document.getElementById("slider");
+        slider.onmousedown = () => sliderAtivo = true;
+        slider.onmouseup = () => sliderAtivo = false;
+        
+        slider.oninput = function(){
+            let valor = parseInt(this.value);
+            document.getElementById("val-sens").innerText = valor;
+            db.ref("config").update({ sensibilidade: valor });
+        }
+
+        // Silenciar Alarme (Timer de 2 minutos)
         function silenciar(){
             db.ref("comandos").update({ silenciar: true });
             
-            // Lógica do Timer (120 segundos como exemplo)
             clearInterval(timerInterval);
             let tempo = 120;
             const display = document.getElementById("silenciar-timer");
@@ -261,33 +294,31 @@
             timerInterval = setInterval(() => {
                 let minutos = Math.floor(tempo / 60);
                 let segundos = tempo % 60;
-                display.innerHTML = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+                display.innerText = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
                 
                 if (--tempo < 0) {
                     clearInterval(timerInterval);
-                    display.innerHTML = "";
+                    display.innerText = "";
                     db.ref("comandos").update({ silenciar: false });
                 }
             }, 1000);
         }
 
+        // Alternar modo Standby
         function standby(){
             db.ref("comandos/standby").once('value').then(snap => {
                 db.ref("comandos").update({ standby: !snap.val() });
             });
         }
 
-        function testeBuzzer(estado){ db.ref("comandos").update({ teste: estado }); }
-
-        document.getElementById("slider").oninput = function(){
-            db.ref("config").update({ sensibilidade: this.value });
+        // Teste manual do Buzzer
+        function testeBuzzer(estado){ 
+            db.ref("comandos").update({ teste: estado }); 
         }
 
-        function logout(){ firebase.auth().signOut().then(() => window.location="login.html"); }
-
-        function resetPainel(){
-            document.getElementById("mq2").innerHTML="0";
-            document.getElementById("optico").innerHTML="0";
+        // Logout
+        function logout(){ 
+            firebase.auth().signOut().then(() => window.location="login.html"); 
         }
     </script>
 </body>
