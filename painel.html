@@ -1,22 +1,29 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOLARQ INDUSTRIAL | Monitoramento</title>
-
+    <title>VOLARQ INDUSTRIAL MONITOR</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* Paleta Volarq: Azul Marinho (#121d2f), Laranja (#ff8c00), Branco (#ffffff) */
-        
+        /* Paleta extraída da imagem 2: Neumorfismo Dark */
+        :root {
+            --bg-color: #1a1c20;
+            --card-bg: #1e2126;
+            --optico-color: #d4e157; /* Amarelo limão neon */
+            --mq2-color: #e53935;    /* Vermelho intenso */
+            --text-silver: #a0a5ab;
+            /* Sombras Neumórficas */
+            --shadow-out: 8px 8px 16px #121417, -8px -8px 16px #262c33;
+            --shadow-in: inset 4px 4px 8px #121417, inset -4px -4px 8px #262c33;
+        }
+
         body {
-            background-color: #121d2f;
+            background-color: var(--bg-color);
             color: #ffffff;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -24,122 +31,124 @@
             align-items: center;
         }
 
-        .header {
+        h1 {
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            color: #ffffff;
+            margin-bottom: 30px;
             text-align: center;
+        }
+
+        /* Container para alinhar os cards lado a lado como na foto */
+        .sensor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 450px;
             margin-bottom: 30px;
         }
 
-        h1 {
-            color: #ffffff;
-            font-size: 1.8rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin: 10px 0;
-        }
-
-        .highlight-orange {
-            color: #ff8c00;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 600px;
-        }
-
-        /* Estilização dos Cards */
         .card {
-            background: #1c293e;
-            padding: 20px 25px;
-            margin-bottom: 15px;
-            border-radius: 12px;
+            background: var(--card-bg);
+            padding: 25px 15px;
+            border-radius: 25px;
+            box-shadow: var(--shadow-out);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.03);
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            border-left: 6px solid #ff8c00;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .label {
-            font-size: 0.85rem;
+        .card-label {
+            color: var(--text-silver);
+            font-size: 0.75rem;
             text-transform: uppercase;
-            color: #a0aec0;
+            margin-bottom: 15px;
             font-weight: bold;
         }
 
-        .valor {
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: #ff8c00;
+        /* Efeito de círculo afundado para o valor */
+        .value-display {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-in);
+            font-size: 1.8rem;
+            font-weight: bold;
         }
+
+        /* Cores específicas dos sensores */
+        #mq2 { color: var(--mq2-color); text-shadow: 0 0 10px rgba(229, 57, 53, 0.3); }
+        #optico { color: var(--optico-color); text-shadow: 0 0 10px rgba(212, 225, 87, 0.3); }
 
         /* Alerta de Incêndio */
-        #alerta-container {
+        #alerta {
             width: 100%;
-            margin: 10px 0;
-            min-height: 50px;
+            max-width: 450px;
+            text-align: center;
+            margin-bottom: 20px;
         }
 
-        .alerta-box {
-            background-color: #e53e3e;
-            color: white;
+        .alerta {
+            color: #ff3333;
+            background: rgba(255, 51, 51, 0.1);
+            border: 1px solid #ff3333;
             padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
+            border-radius: 15px;
             font-size: 1.2rem;
+            font-weight: bold;
             text-transform: uppercase;
-            animation: pulse-red 1s infinite;
+            animation: piscando 1s infinite;
         }
 
         /* Gráfico */
-        .chart-container {
-            background: #1c293e;
-            border-radius: 15px;
+        canvas {
+            background: var(--card-bg);
+            border-radius: 25px;
+            box-shadow: var(--shadow-out);
             padding: 15px;
-            margin-top: 20px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            width: 100% !important;
+            max-width: 450px;
         }
 
-        @keyframes pulse-red {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7); }
-            70% { transform: scale(1.02); box-shadow: 0 0 0 15px rgba(229, 62, 62, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 62, 62, 0); }
-        }
-
-        @media (max-width: 480px) {
-            h1 { font-size: 1.4rem; }
-            .valor { font-size: 1.8rem; }
+        @keyframes piscando {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
 
 <body>
 
-    <div class="header">
-        <h1>VOLARQ <span class="highlight-orange">INDUSTRIAL</span></h1>
-        <p style="color: #a0aec0; font-size: 0.9rem;">Monitoramento de Sensores em Tempo Real</p>
+    <h1>VOLARQ INDUSTRIAL MONITOR</h1>
+
+    <div class="sensor-container">
+        <div class="card">
+            <div class="card-label">MQ2 (Gás)</div>
+            <div class="value-display">
+                <span id="mq2">0</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Óptico (Fumaça)</div>
+            <div class="value-display">
+                <span id="optico">0</span>
+            </div>
+        </div>
     </div>
 
-    <div class="container">
-        <div class="card">
-            <div class="label">Gás & Fumaça (MQ2)</div>
-            <div class="valor" id="mq2">0</div>
-        </div>
+    <div id="alerta"></div>
 
-        <div class="card">
-            <div class="label">Sensor Óptico</div>
-            <div class="valor" id="optico">0</div>
-        </div>
-
-        <div id="alerta-container"></div>
-
-        <div class="chart-container">
-            <canvas id="grafico"></canvas>
-        </div>
-    </div>
+    <canvas id="grafico"></canvas>
 
     <script>
-        // --- CONFIGURAÇÃO FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688",
             databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/"
@@ -148,93 +157,66 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- CONFIGURAÇÃO DO GRÁFICO (CHART.JS) ---
+        // --- Gráfico com as cores da paleta ---
         const ctx = document.getElementById('grafico').getContext('2d');
-        const maxPontos = 10;
-        let labels = [];
-        let dataMQ2 = [];
-        let dataOptico = [];
-
         const chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'MQ2',
-                        borderColor: '#ff8c00',
-                        backgroundColor: 'rgba(255, 140, 0, 0.1)',
-                        data: dataMQ2,
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true
-                    },
-                    {
-                        label: 'Óptico',
-                        borderColor: '#ffffff',
-                        borderDash: [5, 5],
-                        data: dataOptico,
-                        borderWidth: 2,
-                        tension: 0.4
-                    }
-                ]
+                labels: [],
+                datasets: [{
+                    label: 'MQ2',
+                    borderColor: '#e53935',
+                    data: [],
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointRadius: 0
+                }, {
+                    label: 'Óptico',
+                    borderColor: '#d4e157',
+                    data: [],
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
             },
             options: {
                 responsive: true,
                 scales: {
-                    y: { 
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        ticks: { color: '#a0aec0' }
-                    },
-                    x: { 
-                        grid: { display: false },
-                        ticks: { color: '#a0aec0' }
-                    }
+                    x: { display: false },
+                    y: { grid: { color: '#2a2f35' }, ticks: { color: '#70757a' } }
                 },
-                plugins: {
-                    legend: { labels: { color: '#ffffff', font: { size: 12 } } }
-                }
+                plugins: { legend: { labels: { color: '#70757a' } } }
             }
         });
 
-        // --- LÓGICA DE DADOS EM TEMPO REAL ---
-
-        // Escutar Sensores
+        // --- Lógica Firebase ---
         db.ref("volarq/device01/sensores").on("value", (snap) => {
-            const dados = snap.val();
+            let dados = snap.val();
             if (dados) {
-                const agora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-                // Atualizar números na tela
                 document.getElementById("mq2").innerText = dados.mq2;
                 document.getElementById("optico").innerText = dados.optico;
 
-                // Atualizar Gráfico
-                if (labels.length >= maxPontos) {
-                    labels.shift();
-                    dataMQ2.shift();
-                    dataOptico.shift();
+                // Atualizar gráfico
+                if (chart.data.labels.length > 20) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                    chart.data.datasets[1].data.shift();
                 }
-
-                labels.push(agora);
-                dataMQ2.push(dados.mq2);
-                dataOptico.push(dados.optico);
-
+                chart.data.labels.push("");
+                chart.data.datasets[0].data.push(dados.mq2);
+                chart.data.datasets[1].data.push(dados.optico);
                 chart.update();
             }
         });
 
-        // Escutar Alerta de Fogo
         db.ref("volarq/device01/alerta/fogo").on("value", (snap) => {
-            const container = document.getElementById("alerta-container");
-            if (snap.val() === true) {
-                container.innerHTML = <div class="alerta-box">⚠️ INCÊNDIO DETECTADO ⚠️</div>;
+            if (snap.val() == true) {
+                document.getElementById("alerta").innerHTML = "<div class='alerta'>⚠️ INCÊNDIO ⚠️</div>";
             } else {
-                container.innerHTML = "";
+                document.getElementById("alerta").innerHTML = "";
             }
         });
-
     </script>
+
 </body>
 </html>
