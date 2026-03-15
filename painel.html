@@ -2,221 +2,236 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>VOLARQ INDUSTRIAL MONITOR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOLARQ INDUSTRIAL</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    
     <style>
-        /* Paleta extraída da imagem 2: Neumorfismo Dark */
         :root {
-            --bg-color: #1a1c20;
-            --card-bg: #1e2126;
-            --optico-color: #d4e157; /* Amarelo limão neon */
-            --mq2-color: #e53935;    /* Vermelho intenso */
-            --text-silver: #a0a5ab;
-            /* Sombras Neumórficas */
-            --shadow-out: 8px 8px 16px #121417, -8px -8px 16px #262c33;
-            --shadow-in: inset 4px 4px 8px #121417, inset -4px -4px 8px #262c33;
+            --bg-main: #121418;
+            --card-grad: linear-gradient(145deg, #1e2229, #191c21);
+            --shadow-dark: #0a0b0d;
+            --shadow-light: #2c313a;
+            --green-neon: #cddc39;
+            --red-neon: #ff5722;
+            --blue-neon: #448aff;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: #ffffff;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
+            background-color: var(--bg-main);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        h1 {
-            font-size: 1.4rem;
-            letter-spacing: 2px;
-            color: #ffffff;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        /* Container para alinhar os cards lado a lado como na foto */
-        .sensor-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            width: 100%;
-            max-width: 450px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            padding: 25px 15px;
-            border-radius: 25px;
-            box-shadow: var(--shadow-out);
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.03);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .card-label {
-            color: var(--text-silver);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        /* Efeito de círculo afundado para o valor */
-        .value-display {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            box-shadow: var(--shadow-in);
-            font-size: 1.8rem;
-            font-weight: bold;
+            padding: 20px;
+            margin: 0;
         }
 
-        /* Cores específicas dos sensores */
-        #mq2 { color: var(--mq2-color); text-shadow: 0 0 10px rgba(229, 57, 53, 0.3); }
-        #optico { color: var(--optico-color); text-shadow: 0 0 10px rgba(212, 225, 87, 0.3); }
+        .dashboard {
+            width: 350px;
+            background-color: #1a1d23;
+            padding: 25px;
+            border-radius: 40px;
+            box-shadow: 20px 20px 60px var(--shadow-dark);
+        }
 
-        /* Alerta de Incêndio */
-        #alerta {
-            width: 100%;
-            max-width: 450px;
+        .header { margin-bottom: 25px; }
+        .header h1 { font-size: 24px; margin: 0; color: #a0a5ad; letter-spacing: 1px; }
+        .header span { color: #555; font-size: 13px; text-transform: capitalize; }
+
+        .row { display: flex; justify-content: space-between; margin-bottom: 25px; }
+
+        .gauge-card {
+            width: 145px;
+            background: var(--card-grad);
+            border-radius: 20px;
+            padding: 15px 0;
             text-align: center;
-            margin-bottom: 20px;
+            box-shadow: inset 2px 2px 5px var(--shadow-light), 5px 5px 15px var(--shadow-dark);
         }
 
-        .alerta {
-            color: #ff3333;
-            background: rgba(255, 51, 51, 0.1);
-            border: 1px solid #ff3333;
+        .gauge-label { font-size: 10px; color: #888; margin-bottom: 10px; display: block; text-transform: uppercase; }
+        
+        .gauge-display {
+            position: relative;
+            width: 90px;
+            height: 55px;
+            margin: 0 auto;
+            border-top: 4px solid #111;
+            border-radius: 100px 100px 0 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .optico-arc { border-color: var(--green-neon) transparent transparent var(--green-neon); }
+        .mq2-arc { border-color: var(--red-neon) transparent transparent transparent; }
+
+        .value { font-size: 28px; font-weight: bold; }
+        .c-green { color: var(--green-neon); text-shadow: 0 0 10px rgba(205, 220, 57, 0.3); }
+        .c-red { color: var(--red-neon); text-shadow: 0 0 10px rgba(255, 87, 34, 0.3); }
+
+        /* Quick Actions */
+        .btn-group { display: flex; justify-content: space-around; margin-bottom: 25px; }
+        .btn-wrapper { text-align: center; font-size: 9px; color: #666; font-weight: bold; }
+
+        .round-btn {
+            width: 55px; height: 55px;
+            border-radius: 50%;
+            background: #1a1d23;
+            border: 1px solid #2c313a;
+            margin-bottom: 8px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 5px 5px 12px var(--shadow-dark), -2px -2px 6px var(--shadow-light);
+            cursor: pointer;
+            transition: 0.2s;
+            color: white;
+        }
+
+        .round-btn:active { box-shadow: inset 3px 3px 6px #000; transform: scale(0.95); }
+        
+        .icon-pwr { color: #ff9800; font-size: 22px; }
+        .icon-spk { color: var(--blue-neon); font-size: 22px; }
+        .btn-standby { background: #111; color: #ff9800; font-size: 11px; border: 2px solid #333; }
+        .btn-standby.active { color: #5ff555 !important; border-color: #5ff555 !important; }
+
+        /* Chart Section */
+        .chart-container {
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
             padding: 15px;
-            border-radius: 15px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            animation: piscando 1s infinite;
+            box-shadow: inset 2px 2px 10px #000;
         }
 
-        /* Gráfico */
-        canvas {
-            background: var(--card-bg);
-            border-radius: 25px;
-            box-shadow: var(--shadow-out);
-            padding: 15px;
-            width: 100% !important;
-            max-width: 450px;
-        }
-
-        @keyframes piscando {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(0.98); }
-            100% { opacity: 1; transform: scale(1); }
-        }
+        #alerta-container { text-align: center; margin-bottom: 15px; min-height: 20px; }
+        .fire-alert { color: var(--red-neon); font-weight: bold; font-size: 14px; animation: blink 0.8s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     </style>
 </head>
-
 <body>
 
-    <h1>VOLARQ INDUSTRIAL MONITOR</h1>
+<div class="dashboard">
+    <div class="header">
+        <h1>VOLARQ •</h1>
+        <span id="fase-status">Conectando...</span>
+    </div>
 
-    <div class="sensor-container">
-        <div class="card">
-            <div class="card-label">MQ2 (Gás)</div>
-            <div class="value-display">
-                <span id="mq2">0</span>
+    <div id="alerta-container"></div>
+
+    <div class="row">
+        <div class="gauge-card">
+            <span class="gauge-label">Valor Óptico</span>
+            <div class="gauge-display optico-arc">
+                <div class="value c-green" id="optico">0</div>
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-label">Óptico (Fumaça)</div>
-            <div class="value-display">
-                <span id="optico">0</span>
+        <div class="gauge-card">
+            <span class="gauge-label">Valor MQ-2</span>
+            <div class="gauge-display mq2-arc">
+                <div class="value c-red" id="mq2">0</div>
             </div>
         </div>
     </div>
 
-    <div id="alerta"></div>
+    <div class="btn-group">
+        <div class="btn-wrapper">
+            <button id="btn-silenciar" class="round-btn" onclick="enviarComando('silenciar')"><span class="icon-pwr">⏻</span></button>
+            SILENCIAR
+        </div>
+        <div class="btn-wrapper">
+            <button id="btn-teste" class="round-btn" onclick="enviarComando('teste_buzzer')"><span class="icon-spk">🔊</span></button>
+            TESTAR
+        </div>
+        <div class="btn-wrapper">
+            <button id="btn-standby" class="round-btn btn-standby" onclick="enviarComando('standby', true)">OFF</button>
+            STAND-BY
+        </div>
+    </div>
 
-    <canvas id="grafico"></canvas>
+    <div class="chart-container">
+        <span class="gauge-label">Histórico Recente</span>
+        <canvas id="graficoHistorico"></canvas>
+    </div>
+</div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688",
-            databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/"
-        };
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688", databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const devicePath = "volarq/device01/";
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // --- Gráfico com as cores da paleta ---
-        const ctx = document.getElementById('grafico').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'MQ2',
-                    borderColor: '#e53935',
-                    data: [],
-                    borderWidth: 2,
-                    tension: 0.4,
-                    pointRadius: 0
-                }, {
-                    label: 'Óptico',
-                    borderColor: '#d4e157',
-                    data: [],
-                    borderWidth: 2,
-                    tension: 0.4,
-                    pointRadius: 0
-                }]
+    // --- GRÁFICO (Chart.js) ---
+    const ctx = document.getElementById('graficoHistorico').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                { label: 'MQ2', borderColor: '#ff5722', backgroundColor: 'rgba(255,87,34,0.1)', data: [], borderWidth: 2, tension: 0.4, pointRadius: 0 },
+                { label: 'Optico', borderColor: '#cddc39', backgroundColor: 'rgba(205,220,57,0.1)', data: [], borderWidth: 2, tension: 0.4, pointRadius: 0 }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: { display: false },
+                y: { grid: { color: '#222' }, ticks: { color: '#555', font: { size: 10 } } }
             },
-            options: {
-                responsive: true,
-                scales: {
-                    x: { display: false },
-                    y: { grid: { color: '#2a2f35' }, ticks: { color: '#70757a' } }
-                },
-                plugins: { legend: { labels: { color: '#70757a' } } }
-            }
-        });
+            plugins: { legend: { display: false } }
+        }
+    });
 
-        // --- Lógica Firebase ---
-        db.ref("volarq/device01/sensores").on("value", (snap) => {
-            let dados = snap.val();
-            if (dados) {
-                document.getElementById("mq2").innerText = dados.mq2;
-                document.getElementById("optico").innerText = dados.optico;
+    // --- FIREBASE LOGIC ---
 
-                // Atualizar gráfico
-                if (chart.data.labels.length > 20) {
-                    chart.data.labels.shift();
-                    chart.data.datasets[0].data.shift();
-                    chart.data.datasets[1].data.shift();
-                }
-                chart.data.labels.push("");
-                chart.data.datasets[0].data.push(dados.mq2);
-                chart.data.datasets[1].data.push(dados.optico);
-                chart.update();
-            }
-        });
+    // 1. Sensores em Tempo Real
+    db.ref(devicePath + "sensores").on("value", (snap) => {
+        const d = snap.val();
+        if (d) {
+            document.getElementById("mq2").innerText = d.mq2;
+            document.getElementById("optico").innerText = d.optico;
+        }
+    });
 
-        db.ref("volarq/device01/alerta/fogo").on("value", (snap) => {
-            if (snap.val() == true) {
-                document.getElementById("alerta").innerHTML = "<div class='alerta'>⚠️ INCÊNDIO ⚠️</div>";
-            } else {
-                document.getElementById("alerta").innerHTML = "";
-            }
+    // 2. Histórico (Pega o dia de hoje)
+    const hoje = new Date().toISOString().split('T')[0];
+    db.ref(devicePath + "historico/" + hoje).limitToLast(10).on("value", (snap) => {
+        const hist = snap.val();
+        if (!hist) return;
+
+        const labels = Object.keys(hist);
+        const dataMQ2 = labels.map(k => hist[k].mq2);
+        const dataOpt = labels.map(k => hist[k].optico);
+
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = dataMQ2;
+        chart.data.datasets[1].data = dataOpt;
+        chart.update();
+    });
+
+    // 3. Status e Alerta
+    db.ref(devicePath + "status/fase").on("value", snap => document.getElementById("fase-status").innerText = snap.val());
+    db.ref(devicePath + "alerta/fogo").on("value", snap => {
+        document.getElementById("alerta-container").innerHTML = snap.val() ? "<div class='fire-alert'>🔥 INCÊNDIO DETECTADO</div>" : "";
+    });
+
+    // 4. Sincronia Botões
+    db.ref(devicePath + "comandos").on("value", snap => {
+        const c = snap.val();
+        document.getElementById("btn-standby").innerText = c.standby ? "ON" : "OFF";
+        document.getElementById("btn-standby").classList.toggle("active", c.standby);
+    });
+
+    function enviarComando(tipo, isToggle = false) {
+        const ref = db.ref(devicePath + "comandos/" + tipo);
+        ref.once("value").then(s => {
+            const val = s.val();
+            if(isToggle) ref.set(!val);
+            else { ref.set(true); setTimeout(() => ref.set(false), 1000); }
         });
-    </script>
+    }
+</script>
 
 </body>
 </html>
