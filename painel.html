@@ -1,145 +1,240 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>VOLARQ Industrial | Painel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOLARQ INDUSTRIAL | Monitoramento</title>
+
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        /* Manter seu CSS original aqui, apenas adicionei esta classe abaixo */
-        :root { --bg-color: #0d1117; --card-bg: #161b22; --accent-cyan: #00f2ff; --accent-green: #39ff14; --accent-red: #ff3131; --accent-yellow: #ffea00; --accent-orange: #ff9800; --text-main: #e6edf3; --text-dim: #8b949e; }
-        body { background-color: var(--bg-color); font-family: 'Roboto', sans-serif; color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; transition: 0.5s; }
-        .header-container { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; padding-bottom: 15px; margin-bottom: 30px; }
-        h1 { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; letter-spacing: 2px; margin: 0; color: var(--accent-cyan); }
-        .logout-btn { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .painel { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; width: 100%; max-width: 800px; }
-        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid #30363d; text-align: center; }
-        .valor { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; margin-top: 10px; }
-        .status-container { background: #090c10; padding: 20px; border-radius: 10px; margin: 30px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; width: 100%; max-width: 800px; border: 1px inset #30363d; }
-        .led-item { display: flex; align-items: center; font-size: 0.85rem; color: var(--text-dim); }
-        .led { width: 12px; height: 12px; border-radius: 50%; background: #21262d; margin-right: 10px; border: 2px solid #000; }
-        .on { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
-        .fire { background: var(--accent-red); box-shadow: 0 0 15px var(--accent-red); animation: pulse 0.8s infinite; }
-        .standby-on { background: var(--accent-orange); box-shadow: 0 0 10px var(--accent-orange); }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .controls { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center;}
-        .btn-action { background: #21262d; color: var(--text-main); border: 1px solid #30363d; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; }
-        .slider-box { background: var(--card-bg); padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid #30363d; text-align: center; }
-        .slider { -webkit-appearance: none; width: 100%; height: 6px; background: #0d1117; border-radius: 5px; }
-        .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent-cyan); border-radius: 50%; cursor: pointer; }
-        .is-standby { filter: grayscale(0.8) brightness(0.5); pointer-events: none; }
-        .is-standby .logout-btn, .is-standby .btn-action { pointer-events: auto; }
+        /* Paleta Volarq: Azul Marinho (#121d2f), Laranja (#ff8c00), Branco (#ffffff) */
+        
+        body {
+            background-color: #121d2f;
+            color: #ffffff;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 10px 0;
+        }
+
+        .highlight-orange {
+            color: #ff8c00;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* Estilização dos Cards */
+        .card {
+            background: #1c293e;
+            padding: 20px 25px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 6px solid #ff8c00;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #a0aec0;
+            font-weight: bold;
+        }
+
+        .valor {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #ff8c00;
+        }
+
+        /* Alerta de Incêndio */
+        #alerta-container {
+            width: 100%;
+            margin: 10px 0;
+            min-height: 50px;
+        }
+
+        .alerta-box {
+            background-color: #e53e3e;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            animation: pulse-red 1s infinite;
+        }
+
+        /* Gráfico */
+        .chart-container {
+            background: #1c293e;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 15px rgba(229, 62, 62, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 62, 62, 0); }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.4rem; }
+            .valor { font-size: 1.8rem; }
+        }
     </style>
 </head>
+
 <body>
 
-    <div class="header-container">
-        <h1>VOLARQ <span style="font-weight:300; color:white">SYS</span></h1>
-        <button class="logout-btn" onclick="logout()">LOGOUT</button>
+    <div class="header">
+        <h1>VOLARQ <span class="highlight-orange">INDUSTRIAL</span></h1>
+        <p style="color: #a0aec0; font-size: 0.9rem;">Monitoramento de Sensores em Tempo Real</p>
     </div>
 
-    <div class="painel" id="main-cards">
+    <div class="container">
         <div class="card">
-            <div style="color: var(--text-dim); font-size: 0.8rem;">MQ2</div>
-            <div id="mq2" class="valor">0</div>
+            <div class="label">Gás & Fumaça (MQ2)</div>
+            <div class="valor" id="mq2">0</div>
         </div>
+
         <div class="card">
-            <div style="color: var(--text-dim); font-size: 0.8rem;">SENSOR ÓPTICO</div>
-            <div id="optico" class="valor">0</div>
+            <div class="label">Sensor Óptico</div>
+            <div class="valor" id="optico">0</div>
         </div>
-    </div>
 
-    <div class="status-container">
-        <div class="led-item"><div id="led_conectado" class="led"></div> CONECTADO</div>
-        <div class="led-item"><div id="led_aquecendo" class="led"></div> AQUECENDO</div>
-        <div class="led-item"><div id="led_calibrando" class="led"></div> CALIBRANDO</div>
-        <div class="led-item"><div id="led_monitorando" class="led"></div> MONITORANDO</div>
-        <div class="led-item" style="color:var(--accent-red)"><div id="led_fogo" class="led"></div> FOGO</div>
-    </div>
+        <div id="alerta-container"></div>
 
-    <div class="controls">
-        <button class="btn-action" onclick="silenciar()">SILENCIAR <span id="silenciar-timer"></span></button>
-        <button class="btn-action" onclick="standby()">
-            <div id="led_standby_btn" class="led" style="margin:0"></div> STANDBY
-        </button>
-        <button class="btn-action" onmousedown="testeBuzzer(true)" onmouseup="testeBuzzer(false)">TESTAR BUZZER</button>
-    </div>
-
-    <div class="slider-box">
-        <div style="color: var(--text-dim); font-size: 0.8rem; margin-bottom:10px">
-            SENSIBILIDADE: <span id="val-sens">200</span>
+        <div class="chart-container">
+            <canvas id="grafico"></canvas>
         </div>
-        <input type="range" min="10" max="1000" value="200" class="slider" id="slider">
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688", databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/" };
+        // --- CONFIGURAÇÃO FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688",
+            databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/"
+        };
+
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let sliderAtivo = false;
+        // --- CONFIGURAÇÃO DO GRÁFICO (CHART.JS) ---
+        const ctx = document.getElementById('grafico').getContext('2d');
+        const maxPontos = 10;
+        let labels = [];
+        let dataMQ2 = [];
+        let dataOptico = [];
 
-        // Listener Principal
-        db.ref().on("value", (snap) => {
-            const data = snap.val();
-            if(!data) return;
-
-            // Atualiza Sensores
-            document.getElementById("mq2").innerText = data.sensor.mq2 || 0;
-            document.getElementById("optico").innerText = data.sensor.optico || 0;
-            
-            // LEDs Status
-            toggleLed("led_conectado", data.sensor.conectado);
-            toggleLed("led_aquecendo", data.sensor.aquecendo);
-            toggleLed("led_calibrando", data.sensor.calibrando);
-            toggleLed("led_monitorando", data.sensor.monitorando);
-            
-            if(data.sensor.fogo) document.getElementById("led_fogo").classList.add("fire");
-            else document.getElementById("led_fogo").classList.remove("fire");
-
-            // Standby UI
-            if(data.comandos.standby) {
-                document.body.classList.add("is-standby");
-                document.getElementById("led_standby_btn").classList.add("standby-on");
-            } else {
-                document.body.classList.remove("is-standby");
-                document.getElementById("led_standby_btn").classList.remove("standby-on");
-            }
-
-            // Sincroniza Slider
-            if(!sliderAtivo) {
-                document.getElementById("slider").value = data.config.sensibilidade;
-                document.getElementById("val-sens").innerText = data.config.sensibilidade;
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'MQ2',
+                        borderColor: '#ff8c00',
+                        backgroundColor: 'rgba(255, 140, 0, 0.1)',
+                        data: dataMQ2,
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Óptico',
+                        borderColor: '#ffffff',
+                        borderDash: [5, 5],
+                        data: dataOptico,
+                        borderWidth: 2,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#a0aec0' }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: '#a0aec0' }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#ffffff', font: { size: 12 } } }
+                }
             }
         });
 
-        function toggleLed(id, state) {
-            document.getElementById(id).classList.toggle("on", !!state);
-        }
+        // --- LÓGICA DE DADOS EM TEMPO REAL ---
 
-        // Slider logic
-        const slider = document.getElementById("slider");
-        slider.onmousedown = () => sliderAtivo = true;
-        slider.oninput = (e) => document.getElementById("val-sens").innerText = e.target.value;
-        slider.onchange = (e) => {
-            db.ref("config").update({ sensibilidade: parseInt(e.target.value) });
-            sliderAtivo = false;
-        };
+        // Escutar Sensores
+        db.ref("volarq/device01/sensores").on("value", (snap) => {
+            const dados = snap.val();
+            if (dados) {
+                const agora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-        function standby() {
-            db.ref("comandos/standby").once('value').then(s => db.ref("comandos").update({ standby: !s.val() }));
-        }
+                // Atualizar números na tela
+                document.getElementById("mq2").innerText = dados.mq2;
+                document.getElementById("optico").innerText = dados.optico;
 
-        function silenciar() {
-            db.ref("comandos").update({ silenciar: true });
-            setTimeout(() => db.ref("comandos").update({ silenciar: false }), 120000);
-        }
+                // Atualizar Gráfico
+                if (labels.length >= maxPontos) {
+                    labels.shift();
+                    dataMQ2.shift();
+                    dataOptico.shift();
+                }
 
-        function testeBuzzer(state) { db.ref("comandos").update({ teste: state }); }
-        function logout() { firebase.auth().signOut().then(() => window.location="login.html"); }
+                labels.push(agora);
+                dataMQ2.push(dados.mq2);
+                dataOptico.push(dados.optico);
+
+                chart.update();
+            }
+        });
+
+        // Escutar Alerta de Fogo
+        db.ref("volarq/device01/alerta/fogo").on("value", (snap) => {
+            const container = document.getElementById("alerta-container");
+            if (snap.val() === true) {
+                container.innerHTML = <div class="alerta-box">⚠️ INCÊNDIO DETECTADO ⚠️</div>;
+            } else {
+                container.innerHTML = "";
+            }
+        });
+
     </script>
 </body>
 </html>
