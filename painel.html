@@ -1,96 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-pt">
 <head>
-    <title>VOLARQ INDUSTRIAL</title>
+    <meta charset="UTF-8">
+    <title>VOLARQ INDUSTRIAL - DASHBOARD V3</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background:#0b0f14; color:#00e5ff; font-family:Arial; text-align: center; }
-        .card { background:#111827; padding:20px; margin:10px; border-radius:10px; border:1px solid #00e5ff; display: inline-block; min-width: 150px; }
-        .status-badge { padding: 5px 10px; border-radius: 5px; font-weight: bold; }
-        .online { background: #00ff0033; color: #00ff00; }
-        .offline { background: #ff000033; color: #ff0000; }
-        .alerta { color:red; font-size:40px; animation:piscando 1s infinite; font-weight: bold; }
-        @keyframes piscando { 0%{opacity:1} 50%{opacity:0} 100%{opacity:1} }
-        canvas { max-width: 800px; margin: 20px auto; background: #111827; }
+        body { background: #0b0f14; color: #00e5ff; font-family: sans-serif; padding: 20px; text-align: center; }
+        .grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .card { background: #111827; padding: 20px; border: 1px solid #00e5ff; border-radius: 10px; min-width: 200px; }
+        .btn { padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .fogo-alerta { background: red; color: white; padding: 20px; animation: flash 0.5s infinite; border-radius: 10px; display: none; }
+        @keyframes flash { 0% {opacity:1} 50% {opacity:0.5} 100% {opacity:1} }
     </style>
 </head>
 <body>
+    <h1>SISTEMA VOLARQ INDUSTRIAL</h1>
+    <div id="statusFogo" class="fogo-alerta">🔥 INCÊNDIO DETECTADO 🔥</div>
 
-    <h1>VOLARQ INDUSTRIAL MONITOR</h1>
-    
-    <div id="status-container">
-        Status: <span id="status-text" class="status-badge offline">VERIFICANDO...</span>
+    <div class="grid">
+        <div class="card">GAS MQ2 <br><span id="valMQ2" style="font-size: 2em;">0</span></div>
+        <div class="card">ÓPTICO <br><span id="valOpt" style="font-size: 2em;">0</span></div>
+        
+        <div class="card" style="border-color: #ff9800;">
+            COMANDOS
+            <button class="btn" style="background: #ff9800;" onclick="cmd('silenciar', true)">SILENCIAR</button>
+            <button class="btn" style="background: #4caf50;" onclick="cmd('teste_buzzer', true)">TESTAR BUZZER</button>
+            <button id="btnStby" class="btn" style="background: #607d8b;" onclick="toggleStby()">STANDBY: OFF</button>
+        </div>
     </div>
 
-    <div class="card">MQ2: <br><span id="mq2">0</span></div>
-    <div class="card">ÓPTICO: <br><span id="optico">0</span></div>
+    <script>
+        const config = { apiKey: "SUA_API_KEY", databaseURL: "SUA_URL" };
+        firebase.initializeApp(config);
+        const db = firebase.database();
 
-    <div id="alerta"></div>
+        // RECEBER DADOS
+        db.ref("volarq/device01").on("value", snap => {
+            const d = snap.val();
+            document.getElementById("valMQ2").innerText = d.sensores.mq2;
+            document.getElementById("valOpt").innerText = d.sensores.optico;
+            document.getElementById("statusFogo").style.display = d.alerta.fogo ? "block" : "none";
+        });
 
-    <div style="width:90%; max-width:800px; margin:auto;">
-        <canvas id="grafico"></canvas>
-    </div>
-
-<script>
-    const firebaseConfig = { apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688", databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // --- Lógica do Gráfico ---
-    const ctx = document.getElementById('grafico').getContext('2d');
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [
-                { label: 'MQ2', borderColor: '#00e5ff', data: [], fill: false },
-                { label: 'Óptico', borderColor: '#ff00ff', data: [], fill: false }
-            ]
-        },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
-    });
-
-    // --- Monitoramento de Dados e Heartbeat ---
-    db.ref("volarq/device01").on("value", (snap) => {
-        const data = snap.val();
-        if(!data) return;
-
-        // Atualiza números
-        document.getElementById("mq2").innerText = data.sensores.mq2;
-        document.getElementById("optico").innerText = data.sensores.optico;
-
-        // Atualiza Gráfico (Mantém os últimos 20 pontos)
-        const agora = new Date().toLocaleTimeString();
-        chart.data.labels.push(agora);
-        chart.data.datasets[0].data.push(data.sensores.mq2);
-        chart.data.datasets[1].data.push(data.sensores.optico);
-        if(chart.data.labels.length > 20) {
-            chart.data.labels.shift();
-            chart.data.datasets[0].data.shift();
-            chart.data.datasets[1].data.shift();
+        // ENVIAR COMANDOS
+        function cmd(campo, valor) {
+            db.ref(`volarq/device01/comandos/${campo}`).set(valor);
+            if(campo === 'silenciar') setTimeout(() => db.ref(`volarq/device01/comandos/silenciar`).set(false), 5000);
         }
-        chart.update();
 
-        // Lógica de Alerta
-        const alertaDiv = document.getElementById("alerta");
-        alertaDiv.innerHTML = data.alerta?.fogo ? "<div class='alerta'>INCÊNDIO DETECTADO</div>" : "";
-
-        // Verificação de Heartbeat (Timeout de 15 segundos)
-        const lastTimestamp = data.status?.timestamp;
-        const deviceTime = new Date(lastTimestamp);
-        const diff = (Date.now() - lastTimestamp) / 1000;
-
-        const statusLabel = document.getElementById("status-text");
-        if (diff < 15) {
-            statusLabel.innerText = "ONLINE";
-            statusLabel.className = "status-badge online";
-        } else {
-            statusLabel.innerText = "DISPOSITIVO OFFLINE";
-            statusLabel.className = "status-badge offline";
+        let stby = false;
+        function toggleStby() {
+            stby = !stby;
+            db.ref("volarq/device01/comandos/standby").set(stby);
+            document.getElementById("btnStby").innerText = stby ? "STANDBY: ON" : "STANDBY: OFF";
+            document.getElementById("btnStby").style.background = stby ? "#f44336" : "#607d8b";
         }
-    });
-</script>
+    </script>
 </body>
 </html>
