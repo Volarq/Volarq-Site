@@ -1,49 +1,284 @@
 <!DOCTYPE html>
-<html lang="pt-pt">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>VOLARQ INDUSTRIAL - DASHBOARD V3</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOLARQ Industrial | Monitoramento</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+
     <style>
-        body { background: #0b0f14; color: #00e5ff; font-family: sans-serif; padding: 20px; text-align: center; }
-        .grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-        .card { background: #111827; padding: 20px; border: 1px solid #00e5ff; border-radius: 10px; min-width: 200px; }
-        .btn { padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        .fogo-alerta { background: red; color: white; padding: 20px; animation: flash 0.5s infinite; border-radius: 10px; display: none; }
-        @keyframes flash { 0% {opacity:1} 50% {opacity:0.5} 100% {opacity:1} }
+        :root {
+            --bg-body: #0a0e14;
+            --bg-card: #161b22;
+            --accent: #00e5ff;
+            --danger: #ff3e3e;
+            --warning: #ff9800;
+            --success: #4caf50;
+            --text-main: #e6edf3;
+            --text-dim: #8b949e;
+        }
+
+        * { box-sizing: border-box; transition: all 0.3s ease; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #30363d;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        /* Alerta de Incêndio */
+        #statusFogo {
+            display: none;
+            background: rgba(255, 62, 62, 0.15);
+            border: 2px solid var(--danger);
+            color: var(--danger);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 62, 62, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 62, 62, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 62, 62, 0); }
+        }
+
+        /* Grid Principal */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--accent);
+        }
+
+        .card-title {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .valor {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.8rem;
+            color: var(--text-main);
+        }
+
+        /* Seção de Controles */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-warning { background: var(--warning); color: #000; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-gray { background: #30363d; color: #fff; }
+
+        .btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+        /* Gráfico */
+        .chart-container {
+            grid-column: 1 / -1;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #30363d;
+        }
+
+        /* Histórico */
+        .history-section {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+            background: #0d1117;
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px dashed #30363d;
+        }
+
+        .history-inputs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        input[type="date"] {
+            background: #161b22;
+            border: 1px solid #30363d;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        @media (max-width: 768px) {
+            .valor { font-size: 2rem; }
+        }
     </style>
 </head>
 <body>
-    <h1>SISTEMA VOLARQ INDUSTRIAL</h1>
-    <div id="statusFogo" class="fogo-alerta">🔥 INCÊNDIO DETECTADO 🔥</div>
 
-    <div class="grid">
-        <div class="card">GAS MQ2 <br><span id="valMQ2" style="font-size: 2em;">0</span></div>
-        <div class="card">ÓPTICO <br><span id="valOpt" style="font-size: 2em;">0</span></div>
-        
-        <div class="card" style="border-color: #ff9800;">
-            COMANDOS
-            <button class="btn" style="background: #ff9800;" onclick="cmd('silenciar', true)">SILENCIAR</button>
-            <button class="btn" style="background: #4caf50;" onclick="cmd('teste_buzzer', true)">TESTAR BUZZER</button>
-            <button id="btnStby" class="btn" style="background: #607d8b;" onclick="toggleStby()">STANDBY: OFF</button>
+    <header class="header">
+        <h1>VOLARQ <span style="font-weight: 400; opacity: 0.7;">Industrial</span></h1>
+        <p style="color: var(--text-dim); margin-top: 5px;">Sistema de Monitoramento e Prevenção</p>
+    </header>
+
+    <div id="statusFogo">🔥 ALERTA DE INCÊNDIO EM ANDAMENTO 🔥</div>
+
+    <main class="dashboard-grid">
+        <div class="card">
+            <span class="card-title">Gás & Fumaça (MQ2)</span>
+            <div class="valor" id="valMQ2">000</div>
+            <p style="font-size: 0.8rem; color: var(--text-dim);">Unidade: PPM / Analog</p>
         </div>
-    </div>
+
+        <div class="card" style="border-left-color: #ff0055;">
+            <span class="card-title" style="color: var(--text-dim);">Poeira & Partículas</span>
+            <div class="valor" id="valOpt">000</div>
+            <p style="font-size: 0.8rem; color: var(--text-dim);">Sensor Óptico Ativo</p>
+        </div>
+
+        <div class="card" style="border-left: none;">
+            <span class="card-title">Comandos Remotos</span>
+            <div class="controls">
+                <button class="btn btn-warning" onclick="cmd('silenciar', true)">🔕 Silenciar</button>
+                <button class="btn btn-success" onclick="cmd('teste_buzzer', true)">🔊 Testar Buzzer</button>
+                <button id="btnStby" class="btn btn-gray" onclick="toggleStby()">🌙 Ativar Standby</button>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <span class="card-title">Fluxo de Dados Realtime</span>
+            <canvas id="realtimeChart" height="100"></canvas>
+        </div>
+
+        <section class="history-section">
+            <span class="card-title">Análise de Dados Passados</span>
+            <div class="history-inputs">
+                <input type="date" id="dataInput">
+                <button class="btn btn-success" style="padding: 10px 20px;" onclick="carregarHistorico()">📊 Gerar Relatório</button>
+            </div>
+            <div style="height: 300px;">
+                <canvas id="historyChart"></canvas>
+            </div>
+        </section>
+    </main>
 
     <script>
-        const config = { apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688", databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/" };
+        // --- CONFIGURAÇÃO FIREBASE ---
+        const config = { apiKey: "SUA_API_KEY", databaseURL: "SUA_URL" };
         firebase.initializeApp(config);
         const db = firebase.database();
 
-        // RECEBER DADOS
+        // --- INICIALIZAÇÃO CHART.JS (Estilizado) ---
+        const ctxRT = document.getElementById('realtimeChart').getContext('2d');
+        const chartRT = new Chart(ctxRT, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Gás (MQ2)',
+                    borderColor: '#00e5ff',
+                    backgroundColor: 'rgba(0, 229, 255, 0.1)',
+                    data: [],
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Partículas',
+                    borderColor: '#ff0055',
+                    data: [],
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#8b949e' } } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#8b949e' } },
+                    y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } }
+                }
+            }
+        });
+
+        // --- LOGICA DE ATUALIZAÇÃO ---
         db.ref("volarq/device01").on("value", snap => {
             const d = snap.val();
             document.getElementById("valMQ2").innerText = d.sensores.mq2;
             document.getElementById("valOpt").innerText = d.sensores.optico;
             document.getElementById("statusFogo").style.display = d.alerta.fogo ? "block" : "none";
+
+            const hora = new Date().toLocaleTimeString();
+            if (chartRT.data.labels.length > 20) {
+                chartRT.data.labels.shift();
+                chartRT.data.datasets[0].data.shift();
+                chartRT.data.datasets[1].data.shift();
+            }
+            chartRT.data.labels.push(hora);
+            chartRT.data.datasets[0].data.push(d.mq2);
+            chartRT.data.datasets[1].data.push(d.optico);
+            chartRT.update('none');
         });
 
-        // ENVIAR COMANDOS
         function cmd(campo, valor) {
             db.ref(`volarq/device01/comandos/${campo}`).set(valor);
             if(campo === 'silenciar') setTimeout(() => db.ref(`volarq/device01/comandos/silenciar`).set(false), 5000);
@@ -53,8 +288,9 @@
         function toggleStby() {
             stby = !stby;
             db.ref("volarq/device01/comandos/standby").set(stby);
-            document.getElementById("btnStby").innerText = stby ? "STANDBY: ON" : "STANDBY: OFF";
-            document.getElementById("btnStby").style.background = stby ? "#f44336" : "#607d8b";
+            const btn = document.getElementById("btnStby");
+            btn.innerText = stby ? "☀️ Desativar Standby" : "🌙 Ativar Standby";
+            btn.classList.toggle('btn-warning', stby);
         }
     </script>
 </body>
