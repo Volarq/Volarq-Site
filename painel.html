@@ -2,160 +2,119 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>VOLARQ Industrial | Dashboard Pro</title>
+    <title>VOLARQ INDUSTRIAL | PRO FINAL</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --accent: #00e5ff; --danger: #ff3e3e; --success: #3fb950; }
-        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; overflow-x: hidden; }
-        .header { text-align: center; border-bottom: 1px solid #30363d; padding-bottom: 20px; margin-bottom: 30px; }
-        .header h1 { font-family: 'Orbitron'; color: var(--accent); letter-spacing: 3px; margin: 0; }
+        body { background: #0a0c10; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 40px; }
+        .card { background: #12151c; border: 1px solid #232a35; padding: 30px; border-radius: 20px; display: inline-block; width: 280px; margin: 15px; }
+        .val { font-family: 'Orbitron'; font-size: 3rem; color: #00f2ff; transition: 0.5s; }
+        .btn { padding: 18px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 260px; margin: 10px; font-size: 1rem; text-transform: uppercase; }
         
-        /* Alerta Dinâmico */
-        #alertBar { 
-            display: none; background: rgba(255, 62, 62, 0.15); border: 2px solid var(--danger); 
-            color: var(--danger); padding: 20px; border-radius: 12px; font-family: 'Orbitron';
-            font-size: 1.4rem; text-align: center; margin-bottom: 25px; animation: pulse 1.5s infinite;
-        }
-        .mute-mode { border-color: #484f58 !important; color: #8b949e !important; animation: none !important; background: #21262d !important; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 62, 62, 0.5); } 70% { box-shadow: 0 0 0 15px rgba(255, 62, 62, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 62, 62, 0); } }
+        /* Cores de Estado */
+        .btn-stby-on { background: #ff3e3e; color: white; box-shadow: 0 0 20px rgba(255, 62, 62, 0.4); }
+        .btn-normal { background: #232a35; color: #8b949e; }
+        .btn-silence { background: #d29922; color: white; }
+        .btn-test { background: #00c853; color: white; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
-        .card { background: var(--card); border: 1px solid #30363d; border-radius: 16px; padding: 25px; text-align: left; }
-        .val { font-family: 'Orbitron'; font-size: 2.5rem; color: var(--accent); display: block; margin: 10px 0; }
-        
-        .btn { border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-test { background: var(--success); }
-        .btn-silence { background: #d29922; }
-        .btn-stby { background: #30363d; }
-        .stby-active { background: var(--danger) !important; }
+        #alertaBox { 
+            display: none; background: rgba(255, 62, 62, 0.15); border: 2px solid #ff3e3e; 
+            padding: 25px; border-radius: 15px; font-family: 'Orbitron'; margin-bottom: 30px;
+            animation: pulse 1s infinite; font-size: 1.5rem; color: #ff3e3e;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+        #statusCon { font-size: 14px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <header class="header">
-        <h1>VOLARQ <span style="font-weight: 300;">PRO</span></h1>
-        <div id="heartbeat" style="font-size: 0.8rem; color: #8b949e; margin-top: 10px;">Aguardando sinal do dispositivo...</div>
-    </header>
+    <div id="statusCon">SISTEMA: <span id="labelStatus" style="color: #ff3e3e;">CARREGANDO...</span></div>
+    <h1 style="font-family: 'Orbitron'; letter-spacing: 4px; color: #00f2ff;">VOLARQ INDUSTRIAL</h1>
 
-    <div id="alertBar">⚠️ ALERTA DETECÇÃO EM ANDAMENTO ⚠️</div>
+    <div id="alertaBox">⚠️ ALERTA: INCÊNDIO DETECTADO ⚠️</div>
 
-    <div class="grid">
-        <div class="card">
-            <span style="color: #8b949e; font-size: 0.8rem; font-weight: bold;">GÁS & FUMAÇA (MQ2)</span>
-            <span class="val" id="mq2Val">000</span>
-            <div id="faseTxt" style="color: var(--success); font-size: 0.8rem;">Fase: Inicializando</div>
-        </div>
-
-        <div class="card">
-            <span style="color: #8b949e; font-size: 0.8rem; font-weight: bold;">PARTÍCULAS (ÓPTICO)</span>
-            <span class="val" id="optVal" style="color: #ff0055;">000</span>
-            <button class="btn btn-test" onclick="cmd('teste_buzzer', true)">🔊 TESTAR BUZZER</button>
-        </div>
-
-        <div class="card">
-            <span style="color: #8b949e; font-size: 0.8rem; font-weight: bold;">CONTROLES DE OPERAÇÃO</span>
-            <button class="btn btn-silence" onclick="cmd('silenciar', true)">🔕 SILENCIAR AGORA</button>
-            <button id="stbyBtn" class="btn btn-stby" onclick="toggleStby()">🌙 MODO STANDBY</button>
-            <button class="btn" style="background: #21262d;" onclick="downloadCSV()">📥 EXPORTAR CSV</button>
-        </div>
-
-        <div class="card" style="grid-column: 1 / -1;">
-            <canvas id="mainChart" height="100"></canvas>
-        </div>
+    <div class="card">
+        <span style="color: #8b949e; font-size: 12px;">SENSOR MQ2</span>
+        <div id="vMQ2" class="val">0</div>
+    </div>
+    <div class="card">
+        <span style="color: #8b949e; font-size: 12px;">SENSOR ÓPTICO</span>
+        <div id="vOpt" class="val" style="color: #ff0055;">0</div>
     </div>
 
+    <br>
+    <button class="btn btn-test" onclick="cmd('teste_buzzer', true)">🔊 TESTAR BUZZER LOCAL</button><br>
+    <button id="btnS" class="btn btn-silence" onclick="silenciar()">🔕 SILENCIAR ALERTA (1 MIN)</button><br>
+    <button id="btnSt" class="btn btn-normal" onclick="toggleStby()">🌙 MODO STANDBY</button>
+
     <script>
-        const config = { apiKey: "AIzaSyAG_wJMJhJWW-L9HQlCxaSdJLJAF4FN688", databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/" };
+        const config = { databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(config);
         const db = firebase.database();
 
-        let csvData = [];
-        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        let alarmLoop;
+        let standbyAtivo = false;
 
-        // --- SISTEMA DE ÁUDIO ---
-        function playAlarm() {
-            if (alarmLoop) return;
-            alarmLoop = setInterval(() => {
-                let o = audioCtx.createOscillator();
-                let g = audioCtx.createGain();
-                o.type = 'sawtooth'; o.frequency.value = 1000;
-                o.connect(g); g.connect(audioCtx.destination);
-                g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
-                o.start(); o.stop(audioCtx.currentTime + 0.5);
-            }, 600);
-        }
-        function stopAlarm() { clearInterval(alarmLoop); alarmLoop = null; }
-
-        // --- GRÁFICO ---
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'line',
-            data: { labels: [], datasets: [{ label: 'MQ2', borderColor: '#00e5ff', data: [] }, { label: 'Óptico', borderColor: '#ff0055', data: [] }] },
-            options: { responsive: true, scales: { y: { grid: { color: '#30363d' } }, x: { display: false } } }
-        });
-
-        // --- REALTIME ---
+        // --- LÓGICA DE MONITORAMENTO ---
         db.ref("volarq/device01").on("value", snap => {
             const d = snap.val();
-            if(!d) return;
+            const now = Date.now();
+            const lastCheck = d.status?.ultimo_check || 0;
 
-            document.getElementById("mq2Val").innerText = d.sensores.mq2;
-            document.getElementById("optVal").innerText = d.sensores.optico;
-            document.getElementById("faseTxt").innerText = "Fase: " + d.status.fase;
-            
-            // Heartbeat
-            const last = new Date(d.status.ultimo_check).toLocaleTimeString();
-            document.getElementById("heartbeat").innerText = "Sinal Online às: " + last;
-
-            // Lógica de Alerta
-            const fogo = d.alerta.fogo;
-            const mudo = d.comandos?.silenciar || d.comandos?.standby;
-            const bar = document.getElementById("alertBar");
-
-            if (fogo) {
-                bar.style.display = "block";
-                if (mudo) { bar.classList.add("mute-mode"); stopAlarm(); }
-                else { bar.classList.remove("mute-mode"); playAlarm(); }
-            } else {
-                bar.style.display = "none"; stopAlarm();
+            // WATCHDOG: Se não houver sinal por 10 segundos, zera tudo
+            if (now - lastCheck > 10000) {
+                document.getElementById("vMQ2").innerText = "0";
+                document.getElementById("vOpt").innerText = "0";
+                document.getElementById("labelStatus").innerText = "OFFLINE";
+                document.getElementById("labelStatus").style.color = "#ff3e3e";
+                document.getElementById("alertaBox").style.display = "none";
+                return;
             }
 
-            // Gráfico e CSV
-            const time = new Date().toLocaleTimeString();
-            if(chart.data.labels.length > 50) { chart.data.labels.shift(); chart.data.datasets[0].data.shift(); chart.data.datasets[1].data.shift(); }
-            chart.data.labels.push(time);
-            chart.data.datasets[0].data.push(d.sensores.mq2);
-            chart.data.datasets[1].data.push(d.sensores.optico);
-            chart.update('none');
+            document.getElementById("labelStatus").innerText = "ONLINE";
+            document.getElementById("labelStatus").style.color = "#00c853";
+            document.getElementById("vMQ2").innerText = d.sensores.mq2;
+            document.getElementById("vOpt").innerText = d.sensores.optico;
 
-            csvData.push([time, d.sensores.mq2, d.sensores.optico, fogo ? "SIM" : "NAO"].join(","));
+            // Lógica do Alerta (Só aparece se Fogo for true E não estiver em silêncio/standby)
+            const emFogo = d.alerta?.fogo || false;
+            const silenciado = d.comandos?.silenciar || false;
+            standbyAtivo = d.comandos?.standby || false;
 
-            // Botão Standby
-            const sBtn = document.getElementById("stbyBtn");
-            if(d.comandos?.standby) { sBtn.classList.add("stby-active"); sBtn.innerText = "☀️ DESATIVAR STANDBY"; }
-            else { sBtn.classList.remove("stby-active"); sBtn.innerText = "🌙 MODO STANDBY"; }
+            if (emFogo && !silenciado && !standbyAtivo) {
+                document.getElementById("alertaBox").style.display = "block";
+            } else {
+                document.getElementById("alertaBox").style.display = "none";
+            }
+
+            // Estilo do Botão Standby
+            const btnSt = document.getElementById("btnSt");
+            btnSt.className = standbyAtivo ? "btn btn-stby-on" : "btn btn-normal";
+            btnSt.innerText = standbyAtivo ? "☀️ DESATIVAR STANDBY" : "🌙 MODO STANDBY";
         });
 
-        function cmd(c, v) { 
-            db.ref(`volarq/device01/comandos/${c}`).set(v); 
-            if(c === 'silenciar') setTimeout(() => db.ref(`volarq/device01/comandos/silenciar`).set(false), 15000);
+        // --- FUNÇÕES DE COMANDO ---
+        function cmd(campo, valor) {
+            db.ref(`volarq/device01/comandos/${campo}`).set(valor);
+        }
+
+        function silenciar() {
+            cmd('silenciar', true);
+            const btn = document.getElementById("btnS");
+            btn.innerText = "SILENCIADO (1 min)";
+            btn.style.opacity = "0.5";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                cmd('silenciar', false);
+                btn.innerText = "🔕 SILENCIAR ALERTA (1 MIN)";
+                btn.style.opacity = "1";
+                btn.disabled = false;
+            }, 60000);
         }
 
         function toggleStby() {
-            const isAct = document.getElementById("stbyBtn").classList.contains("stby-active");
-            db.ref("volarq/device01/comandos/standby").set(!isAct);
-        }
-
-        function downloadCSV() {
-            const blob = new Blob(["Hora,MQ2,Optico,Fogo\n" + csvData.join("\n")], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'relatorio_volarq.csv';
-            a.click();
+            cmd('standby', !standbyAtivo);
         }
     </script>
 </body>
