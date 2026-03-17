@@ -2,69 +2,175 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>VOLARQ PRO | FINAL DEMO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VOLARQ PRO | Mobile Dashboard</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
     <style>
-        body { background: #0d1117; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; }
-        .grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; }
-        .card { background: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 15px; width: 220px; }
-        .val { font-family: 'Orbitron'; font-size: 2.5rem; color: #00f2ff; margin: 10px 0; }
-        
-        .btn { padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 240px; margin: 10px; text-transform: uppercase; transition: 0.3s; }
-        .btn-test { background: #238636; color: white; }
-        .btn-silence { background: #d29922; color: white; }
-        .btn-stby { background: #30363d; color: #8b949e; }
-        .active-danger { background: #da3633 !important; color: white !important; box-shadow: 0 0 15px #da3633; }
-
-        #alertaBox { 
-            display: none; background: rgba(218, 54, 51, 0.2); border: 2px solid #da3633; 
-            padding: 20px; border-radius: 10px; font-family: 'Orbitron'; color: #da3633;
-            margin: 20px auto; max-width: 600px; animation: blink 1s infinite;
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --accent: #00f2ff;
+            --danger: #da3633;
+            --success: #238636;
+            --warning: #d29922;
         }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        #chart-container { width: 80%; max-width: 800px; margin: 30px auto; background: #161b22; padding: 20px; border-radius: 15px; border: 1px solid #30363d; }
+
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header { width: 100%; margin-bottom: 20px; text-align: center; }
+        
+        h1 { 
+            font-family: 'Orbitron'; 
+            font-size: 1.5rem; 
+            color: var(--accent); 
+            letter-spacing: 2px;
+            margin: 10px 0;
+        }
+
+        #status { font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; }
+
+        /* Grade de Sensores Responsiva */
+        .grid { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 15px; 
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .card { 
+            background: var(--card); 
+            border: 1px solid #30363d; 
+            padding: 15px; 
+            border-radius: 15px; 
+            flex: 1; 
+            min-width: 140px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .label { font-size: 0.7rem; color: #8b949e; text-transform: uppercase; font-weight: 600; }
+        .val { font-family: 'Orbitron'; font-size: 2rem; color: var(--accent); margin-top: 5px; }
+
+        /* Alerta de Fogo */
+        #alertaBox { 
+            display: none; 
+            background: rgba(218, 54, 51, 0.2); 
+            border: 2px solid var(--danger); 
+            padding: 20px; 
+            border-radius: 12px; 
+            font-family: 'Orbitron'; 
+            color: var(--danger);
+            width: 90%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            animation: pulse 1s infinite;
+            font-size: 1rem;
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+
+        /* Container do Gráfico */
+        #chart-container { 
+            width: 100%; 
+            max-width: 600px; 
+            background: var(--card); 
+            margin: 20px 0; 
+            padding: 10px; 
+            border-radius: 15px; 
+            border: 1px solid #30363d;
+            height: 250px;
+        }
+
+        /* Botões Mobile (Grandes e fáceis de clicar) */
+        .controls { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 12px; }
+        
+        .btn { 
+            padding: 18px; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            font-size: 1rem; 
+            text-transform: uppercase; 
+            cursor: pointer; 
+            transition: 0.2s;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-test { background: var(--success); }
+        .btn-silence { background: var(--warning); }
+        .btn-stby { background: #30363d; color: #8b949e; }
+        .active-danger { background: var(--danger) !important; color: white !important; box-shadow: 0 0 15px var(--danger); }
+
+        /* Ajuste para telas muito pequenas */
+        @media (max-width: 360px) {
+            h1 { font-size: 1.2rem; }
+            .val { font-size: 1.6rem; }
+        }
     </style>
 </head>
 <body>
 
-    <h1 style="font-family: 'Orbitron'; color: #00f2ff;">VOLARQ <span style="font-weight: 100;">INDUSTRIAL</span></h1>
-    <div id="status">STATUS: <span id="stTxt" style="color: #da3633;">OFFLINE</span></div>
+    <header>
+        <h1>VOLARQ <span style="font-weight: 200;">PRO</span></h1>
+        <div id="status">SISTEMA: <span id="stTxt" style="color: var(--danger);">OFFLINE</span></div>
+    </header>
 
-    <div id="alertaBox">⚠️ EMERGÊNCIA: FOGO DETECTADO ⚠️</div>
+    <div id="alertaBox">⚠️ EMERGÊNCIA: FOGO! ⚠️</div>
 
     <div class="grid">
-        <div class="card">MQ2 GAS<div id="vMQ2" class="val">0</div></div>
-        <div class="card">ÓPTICO<div id="vOpt" class="val" style="color: #ff0055;">0</div></div>
+        <div class="card"><div class="label">Gás MQ2</div><div id="vMQ2" class="val">0</div></div>
+        <div class="card"><div class="label">Óptico</div><div id="vOpt" class="val" style="color: #ff0055;">0</div></div>
     </div>
 
     <div id="chart-container"><canvas id="grafico"></canvas></div>
 
-    <button class="btn btn-test" onclick="cmd('teste_buzzer', true)">🔊 Testar Buzzer</button><br>
-    <button id="bS" class="btn btn-silence" onclick="silenciar()">🔕 Silenciar Alerta (1 Min)</button><br>
-    <button id="bT" class="btn btn-stby" onclick="toggleStby()">🌙 Modo Standby</button>
+    <div class="controls">
+        <button class="btn btn-test" onclick="cmd('teste_buzzer', true)">🔊 Testar Buzzer</button>
+        <button id="bS" class="btn btn-silence" onclick="silenciar()">🔕 Silenciar (1 Min)</button>
+        <button id="bT" class="btn btn-stby" onclick="toggleStby()">🌙 Modo Standby</button>
+    </div>
 
     <script>
         const config = { databaseURL: "https://volarq-demo-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(config);
         const db = firebase.database();
 
-        // --- Configuração do Gráfico ---
+        // Configuração do Gráfico (Otimizado para Mobile)
         const ctx = document.getElementById('grafico').getContext('2d');
         const chart = new Chart(ctx, {
             type: 'line',
             data: { labels: [], datasets: [
-                { label: 'MQ2', borderColor: '#00f2ff', data: [], tension: 0.3 },
-                { label: 'Óptico', borderColor: '#ff0055', data: [], tension: 0.3 }
+                { label: 'MQ2', borderColor: '#00f2ff', data: [], tension: 0.4, pointRadius: 0 },
+                { label: 'Opt', borderColor: '#ff0055', data: [], tension: 0.4, pointRadius: 0 }
             ]},
-            options: { responsive: true, scales: { y: { beginAtZero: true, grid: { color: '#30363d' } } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, grid: { color: '#21262d' } },
+                    x: { display: false }
+                } 
+            }
         });
 
         let standbyLocal = false;
 
-        // --- Escuta em Tempo Real ---
         db.ref("volarq/device01").on("value", snap => {
             const d = snap.val();
             if(!d) return;
@@ -72,45 +178,44 @@
             const agora = Date.now();
             const ultimoSinal = d.status?.ultimo_check || 0;
 
-            // Watchdog: Se a ESP32 sumir por 10s, zera tudo
+            // Watchdog (10 segundos de tolerância)
             if (agora - ultimoSinal > 10000) {
+                document.getElementById("stTxt").innerText = "OFFLINE";
+                document.getElementById("stTxt").style.color = "var(--danger)";
                 document.getElementById("vMQ2").innerText = "0";
                 document.getElementById("vOpt").innerText = "0";
-                document.getElementById("stTxt").innerText = "OFFLINE";
-                document.getElementById("stTxt").style.color = "#da3633";
                 document.getElementById("alertaBox").style.display = "none";
                 return;
             }
 
-            // Atualiza Interface
             document.getElementById("stTxt").innerText = "ONLINE";
-            document.getElementById("stTxt").style.color = "#238636";
+            document.getElementById("stTxt").style.color = "var(--success)";
             document.getElementById("vMQ2").innerText = d.sensores.mq2;
             document.getElementById("vOpt").innerText = d.sensores.optico;
 
-            // Lógica de Alerta (Oculta se Fogo=false OU Standby=true OU Silenciar=true)
+            // Lógica de Alerta Consolidada
             const fogo = d.alerta?.fogo || false;
             const silenciado = d.comandos?.silenciar || false;
             standbyLocal = d.comandos?.standby || false;
 
-            if (fogo && !silenciado && !standbyLocal) {
-                document.getElementById("alertaBox").style.display = "block";
-            } else {
-                document.getElementById("alertaBox").style.display = "none";
-            }
+            document.getElementById("alertaBox").style.display = (fogo && !silenciado && !standbyLocal) ? "block" : "none";
 
-            // Estilo Botão Standby
+            // Botão Standby
             const btnT = document.getElementById("bT");
             btnT.className = standbyLocal ? "btn active-danger" : "btn btn-stby";
-            btnT.innerText = standbyLocal ? "☀️ SAIR DO STANDBY" : "🌙 MODO STANDBY";
+            btnT.innerText = standbyLocal ? "☀️ Ativar Sistema" : "🌙 Modo Standby";
 
-            // Atualiza Gráfico
-            const hora = new Date().toLocaleTimeString();
-            if(chart.data.labels.length > 15) { chart.data.labels.shift(); chart.data.datasets[0].data.shift(); chart.data.datasets[1].data.shift(); }
+            // Update Gráfico (Máximo 15 pontos para não pesar o celular)
+            const hora = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            if(chart.data.labels.length > 15) { 
+                chart.data.labels.shift(); 
+                chart.data.datasets[0].data.shift(); 
+                chart.data.datasets[1].data.shift(); 
+            }
             chart.data.labels.push(hora);
             chart.data.datasets[0].data.push(d.sensores.mq2);
             chart.data.datasets[1].data.push(d.sensores.optico);
-            chart.update();
+            chart.update('none');
         });
 
         function cmd(c, v) { db.ref(`volarq/device01/comandos/${c}`).set(v); }
@@ -120,10 +225,12 @@
             const btn = document.getElementById("bS");
             btn.classList.add("active-danger");
             btn.innerText = "SILENCIADO...";
+            btn.disabled = true;
             setTimeout(() => {
                 cmd('silenciar', false);
                 btn.classList.remove("active-danger");
-                btn.innerText = "🔕 Silenciar Alerta (1 Min)";
+                btn.innerText = "🔕 Silenciar (1 Min)";
+                btn.disabled = false;
             }, 60000);
         }
 
